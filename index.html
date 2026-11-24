@@ -284,6 +284,17 @@ details.wlog summary{cursor:pointer;color:var(--mute);font-size:14px;margin-top:
 .wkc .wk2 span{display:inline;margin-left:5px;font-size:13px}
 .wkc .sbar{height:8px}
 .wkc>p.mute:last-child{font-size:12.5px;margin-top:6px!important}
+
+/* napredak i kalendar u istom stilu */
+.card.nap{margin-top:0!important}
+.card.nap>table:first-child td{padding-top:6px}
+#dayp table td{padding:10px 2px}
+#dayp label{font-size:14px;margin:12px 0 6px}
+.leg{font-size:12.5px;gap:4px 12px}
+.cal{gap:3px}.cd{min-height:36px;font-size:15px}
+.bdg{padding:8px;font-size:13px}.bdg .bi{width:26px;height:26px}
+.nap .stats .stat b{font-size:clamp(20px,5.5vw,26px)}
+#dayp table tr:first-child td{border-top:0}
 </style>
 </head>
 <body>
@@ -815,13 +826,13 @@ function vDay(plan){plan=planOf(wkOf(selD));
  const un=plan.map((d,i)=>dateOf(wk,i,d.dn)?null:d.name+' ('+d.dn.slice(0,3).toLowerCase()+')').filter(Boolean);
  const lab=(d)=>d.name+' ('+d.dn.slice(0,3).toLowerCase()+')';
  const hasSc=Object.keys(S.sched||{}).some(k=>k>=wk&&k<=addD(wk,6));
- return '<div class="card" id="dayp"><h2 style="font-size:28px">'+wdOf(X)+', '+dt.getDate()+'. '+MON[dt.getMonth()]+'</h2>'+
+ return '<p class="ios-h">'+wdOf(X)+', '+dt.getDate()+'. '+MON[dt.getMonth()]+'</p><div class="card nap" id="dayp">'+
  (S.start&&X<S.start?'<p class="mute">Prije početka programa.</p>':
   ws.length?'<table>'+ws.map(i=>'<tr><td><b>'+plan[i].name+'</b></td><td class="n">'+stTxt(wStat(X,plan,i))+'</td></tr>').join('')+'</table>'+(X==td?'<div class="acts" style="justify-content:flex-start">'+ws.map(i=>'<button class="btn" data-go="'+i+'">Počni: '+plan[i].name+'</button>').join('')+'</div>':''):'<p class="mute">Dan za odmor.</p>')+((S.quick||{})[X]?'<p style="color:var(--ok)">✓ Kratki trening odrađen</p>':'')+
- (edit?'<label>Šta je u planu za ovaj dan?</label><div class="chips" id="asg">'+plan.map((d,i)=>'<button type="button" class="chip'+(ws.includes(i)?' on':'')+'" data-as="'+i+'">'+lab(d)+'</button>').join('')+'<button type="button" class="chip'+(ws.length?'':' on')+'" data-as="off">Odmor</button></div>'+
+ (edit?'<label>Šta je u planu za ovaj dan</label><div class="chips" id="asg">'+plan.map((d,i)=>'<button type="button" class="chip'+(ws.includes(i)?' on':'')+'" data-as="'+i+'">'+lab(d)+'</button>').join('')+'<button type="button" class="chip'+(ws.length?'':' on')+'" data-as="off">Odmor</button></div>'+
   (un.length?'<p class="mute">Ove nedelje još nije raspoređeno: '+un.join(', ')+'. Izaberi dan za taj trening.</p>':'')+
   (hasSc?'<p><button type="button" class="btn ghost" id="rstw">Vrati raspored ove nedelje na plan</button></p>':''):'')+
- '<label for="note">Bilješka za ovaj dan</label><div style="display:flex;gap:10px"><input id="note" maxlength="140" placeholder="npr. trening poslije posla" value="'+esc((S.notes||{})[X]||'')+'"><button type="button" class="btn" id="nsave" style="flex:none">Sačuvaj</button></div><p class="mute" id="nmsg"></p></div>';
+ '<label for="note">Bilješka</label><div style="display:flex;gap:10px"><input id="note" maxlength="140" placeholder="npr. trening poslije posla" value="'+esc((S.notes||{})[X]||'')+'"><button type="button" class="btn" id="nsave" style="flex:none">Sačuvaj</button></div><p class="mute" id="nmsg"></p></div>';
 }
 function vCal(){
  if(!S.profile)return vPro();
@@ -884,7 +895,7 @@ function vPlan(){
   (nx.dt==td&&nx.off==0?'<button class="btn" data-go="'+nx.i+'">Počni</button>':nx.off==0?'<button class="btn ghost" data-open-go="'+nx.i+'">Vježbe</button>':'')+'</div>':'')+
  vWeek(sm)+
  (mkAll.length?'<p class="mute">Nadoknada iz prošle nedelje je ubačena u treninge ispod: odrađeno '+mkAll.filter(Boolean).length+' od '+mkAll.length+'.</p>':'')+
- (openDay===undefined?(openDay=nx&&nx.off==0?nx.i:-1):0,'')+
+ (openDay===undefined?(openDay=-1):0,'')+
  '<p class="ios-h">Dani treninga</p><div class="daylist">'+plan.map((d,i)=>{if(editDay===i)return vEdit(d,i);const dm=m[i]||{},all=d.ex.every((_,j)=>dm[j]=='ok'),bn=d.base||d.ex.length,op=openDay===i;
   const dt=dateOf(wk,i,d.dn),o=d.ex.filter((_,j)=>dm[j]=='ok').length,x=d.ex.filter((_,j)=>dm[j]=='no').length;
   const st=S.start&&dt&&dt<S.start&&!o?'<span class="tag">Prije početka</span>':all?'<span class="tag ok">✓ Odrađeno</span>':o?'<span class="tag">'+o+'/'+d.ex.length+'</span>':dt&&dt<td?'<span class="tag no">Propušteno</span>':dt==td?'<span class="tag today">Danas</span>':x?'<span class="tag">✗ '+x+'</span>':'';
@@ -914,7 +925,7 @@ function vHist(){
  if(!S.start)return '';const rows=[];
  for(let o=-1;o>=-8;o--){if(addD(wkStart(o),6)<S.start)break;const s=summ(o);if(!s.total)continue;
   rows.push('<tr><td>'+range(o)+'</td><td class="n" style="color:var(--ok)">✓ '+s.okp+'%</td><td class="n" style="color:var(--no)">✗ '+s.nop+'%</td></tr>')}
- return rows.length?'<div class="card"><h3>Prethodne nedelje</h3><table>'+rows.join('')+'</table></div>':'';
+ return rows.length?'<p class="ios-h">Prethodne nedelje</p><div class="card nap"><table>'+rows.join('')+'</table></div>':'';
 }
 let actx=null;
 function tone(f,d){if((S.sound||'on')!='on')return;try{actx=actx||new AudioContext();if(actx.state==='suspended')actx.resume();const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.frequency.value=f;g.gain.value=.15;o.start();o.stop(actx.currentTime+d)}catch(e){}}
@@ -987,15 +998,15 @@ function nutri(p){if(!p.sex)return null;const w=+p.w,h=+p.h,a=+p.age;
  const pr=Math.round(w*(({mrs:1.8,def:2,zat:1.6,sna:1.8,kon:1.4})[p.goal]||1.6)),fat=Math.round(w*0.9),carb=Math.max(0,Math.round((kc-pr*4-fat*9)/4));
  return {kc,tdee:Math.round(tdee/50)*50,pr,fat,carb,water:(w*0.035).toFixed(1),f,minor}}
 function vNutri(){const p=S.profile,n=nutri(p);
- if(!n)return '<div class="card"><h3>Ishrana (okvirno)</h3><p class="mute">Da izračunam kalorije i proteine, u Podešavanjima izaberi pol i dnevnu aktivnost.</p><button class="btn ghost" type="button" id="topro">Otvori Podešavanja</button></div>';
+ if(!n)return '<p class="ios-h">Ishrana (okvirno)</p><div class="card nap"><p class="mute">Da izračunam kalorije i proteine, u Podešavanjima izaberi pol i dnevnu aktivnost.</p><button class="btn ghost" type="button" id="topro">Otvori Podešavanja</button></div>';
  const g=n.minor?'Za mlađe od 18 godina prikazujem samo unos za održavanje težine.':n.f<1?'Za tvoj cilj to je oko '+Math.round((1-n.f)*100)+'% manje od održavanja, oko '+n.tdee+' kcal.':n.f>1?'Za snagu to je oko 10% više od održavanja, oko '+n.tdee+' kcal.':'To je unos za održavanje težine.';
- return '<div class="card"><h3>Ishrana (okvirno)</h3><div class="stats" style="margin:10px 0">'+stat(n.kc,'kcal dnevno')+stat(n.pr+' g','proteina')+stat(n.water+' l','vode')+'</div>'+
+ return '<p class="ios-h">Ishrana (okvirno)</p><div class="card nap"><div class="stats" style="margin:0 0 10px">'+stat(n.kc,'kcal dnevno')+stat(n.pr+' g','proteina')+stat(n.water+' l','vode')+'</div>'+
  '<p class="mute" style="margin-top:0">'+g+' Masti oko '+n.fat+' g, ugljenih hidrata oko '+n.carb+' g.</p>'+
- '<p style="margin-bottom:6px"><b>Proteini u praksi</b> (približno):</p><ul class="nut"><li>100 g piletine ≈ 30 g</li><li>100 g tunjevine ≈ 25 g</li><li>200 g grčkog jogurta ≈ 20 g</li><li>100 g posnog sira ≈ 15–20 g</li><li>1 jaje ≈ 6 g</li></ul>'+
+ '<details class="wlog" style="margin:0 0 8px"><summary>Proteini u praksi (približno)</summary><ul class="nut"><li>100 g piletine ≈ 30 g</li><li>100 g tunjevine ≈ 25 g</li><li>200 g grčkog jogurta ≈ 20 g</li><li>100 g posnog sira ≈ 15–20 g</li><li>1 jaje ≈ 6 g</li></ul></details>'+
  '<p class="mute" style="margin-bottom:0">Ovo je procjena po formuli, ne savjet nutricioniste. Ako ti se težina 2–3 nedelje ne mijenja, a cilj je mršavljenje ili definicija, smanji unos za 100–150 kcal. Ako imaš zdravstvenih problema, posavjetuj se sa ljekarom.</p></div>'}
 function vMeas(){const M=S.meas||[],f=M[0],l=M[M.length-1];
  const ch=k=>f&&l&&f[k]&&l[k]&&M.length>1?((l[k]-f[k]>0?'+':'')+(l[k]-f[k]).toFixed(1)):'';
- return '<form class="card" id="mf"><h3>Mjere tijela (cm)</h3><p class="mute" style="margin:4px 0 0">Jednom mjesečno, ujutru, centimetrom preko gole kože. Upiši samo ono što izmjeriš.</p><div class="row">'+
+ return '<p class="ios-h">Mjere tijela (cm)</p><form class="card nap" id="mf"><p class="mute" style="margin:0">Jednom mjesečno, ujutru. Upiši samo ono što izmjeriš.</p><div class="row">'+
  MS.map(([k,t])=>'<div><label for="m_'+k+'">'+t+'</label><input id="m_'+k+'" type="number" inputmode="decimal" step="0.5" min="10" max="250"></div>').join('')+
  '</div><p class="mute" id="mmsg"></p><button class="btn">Sačuvaj mjere</button>'+
  (M.length?'<table class="stack" style="margin-top:14px"><thead><tr><th>Datum</th>'+MS.map(x=>'<th>'+x[1]+'</th>').join('')+'<th></th></tr></thead><tbody>'+
@@ -1075,17 +1086,17 @@ function prs(){const out=[];for(const n in (S.log||{})){const L=S.log[n]||[];con
 function vBadges(){const t=trCount(),w=weekStreaks(),P=prs(),pull=((S.log||{})['Zgibovi']||[]).some(x=>(x.s||[]).some(y=>+y.r>=1));
  const B=[['Prvi trening',t>=1],['10 treninga',t>=10],['25 treninga',t>=25],['50 treninga',t>=50],['100 treninga',t>=100],['Savršena nedelja',w.perfect],['4 nedelje zaredom 80%+',w.best>=4],['12 nedelja zaredom 80%+',w.best>=12],['Prvi zgib',pull],['Novi rekord u kilaži',P.some(x=>x.up)],['Kratki trening',Object.keys(S.quick||{}).length>0],['Mjere 2 puta',(S.meas||[]).length>=2]];
  const got=B.filter(b=>b[1]).length;
- return '<div class="card"><div class="day"><h3>Rekordi i značke</h3><span class="tag">'+got+' / '+B.length+'</span></div>'+
- '<div class="stats" style="margin:12px 0">'+stat(t,t%10==1&&t%100!=11?'trening ukupno':'treninga ukupno')+stat(w.cur,'nedelja zaredom 80%+')+stat(w.best,'najbolji niz')+'</div>'+
+ return '<p class="ios-h">Rekordi i značke · '+got+' / '+B.length+'</p><div class="card nap">'+
+ '<div class="stats" style="margin:0 0 12px">'+stat(t,t%10==1&&t%100!=11?'trening ukupno':'treninga ukupno')+stat(w.cur,'nedelja zaredom 80%+')+stat(w.best,'najbolji niz')+'</div>'+
  (P.length?'<p style="margin:0 0 6px"><b>Najveće kilaže</b></p><table>'+P.slice(0,5).map(x=>'<tr><td>'+esc(x.n)+'</td><td class="n"><b>'+x.kg+' kg</b></td></tr>').join('')+'</table>':'')+
  '<div class="bdgs">'+B.map(([n,ok])=>'<div class="bdg'+(ok?' got':'')+'"><span class="bi" aria-hidden="true">'+(ok?'✓':'')+'</span><span>'+n+'</span></div>').join('')+'</div></div>'}
 // ---------- napredak po vježbi ----------
 let exSel=null,ro2=null;
 function exSeries(n){const L=((S.log||{})[n]||[]);return L.map(x=>{const kg=Math.max(0,...(x.s||[]).map(y=>+y.kg||0)),r=Math.max(0,...(x.s||[]).map(y=>+y.r||0));return {d:x.d,kg,r,s:(x.s||[]).map(y=>+y.r||0)}})}
 function vExChart(){const keys=Object.keys(S.log||{}).filter(k=>(S.log[k]||[]).length).sort();
- if(!keys.length)return '<div class="card"><h3>Napredak po vježbi</h3><p class="mute" style="margin-bottom:0">Kad tokom treninga upisuješ ponavljanja i kilažu, ovdje vidiš kako napreduješ u svakoj vježbi.</p></div>';
+ if(!keys.length)return '<p class="ios-h">Napredak po vježbi</p><div class="card nap"><p class="mute" style="margin-bottom:0">Kad tokom treninga upisuješ ponavljanja i kilažu, ovdje vidiš kako napreduješ u svakoj vježbi.</p></div>';
  if(!keys.includes(exSel))exSel=keys[0];const ser=exSeries(exSel),useKg=ser.some(x=>x.kg>0),e=EX.find(x=>x.n==exSel),unit=useKg?'kg':(e&&e.t?'s':'ponavljanja');
- return '<div class="card"><h3>Napredak po vježbi</h3><label for="exsel">Vježba</label><select id="exsel">'+keys.map(k=>'<option'+(k==exSel?' selected':'')+'>'+esc(k)+'</option>').join('')+'</select>'+
+ return '<p class="ios-h">Napredak po vježbi</p><div class="card nap"><label for="exsel" style="margin-top:0">Vježba</label><select id="exsel">'+keys.map(k=>'<option'+(k==exSel?' selected':'')+'>'+esc(k)+'</option>').join('')+'</select>'+
  (ser.length>1?'<div class="fig" style="min-height:200px;margin-top:12px"><svg id="exch" role="img" aria-label="Grafikon napretka"></svg></div>':'<p class="mute">Grafikon se pojavljuje poslije drugog treninga sa ovom vježbom.</p>')+
  '<table style="margin-top:8px">'+ser.slice(-5).reverse().map(x=>'<tr><td>'+fmtD(x.d)+'</td><td>'+x.s.join(', ')+(e&&e.t&&!useKg?' s':'')+'</td><td class="n"><b>'+(useKg?x.kg+' kg':(e&&e.t?x.r+' s':x.r+' pon.'))+'</b></td></tr>').join('')+'</table><p class="mute" style="margin-bottom:0">Na grafikonu: '+(useKg?'najveća kilaža':'najbolja serija')+' ('+unit+') po treningu.</p></div>'}
 function drawLine(s,vals,labels){const draw=()=>{const W2=s.clientWidth,H=s.clientHeight,pad=34;if(!W2)return;const mn=Math.min(...vals),mx=Math.max(...vals),rg=mx-mn||1,lo=mn-rg*.15,hi=mx+rg*.15;
