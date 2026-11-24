@@ -132,6 +132,7 @@ th{text-align:left;font-size:14px;color:var(--mute);font-weight:600;padding:6px 
 .nextc .pct{color:var(--red);font-size:28px}
 .nextc p{grid-column:1;margin:0!important;font-size:15px}
 .nextc .btn{grid-column:2;grid-row:1/4;min-height:44px;padding:8px 14px;font-size:16px}
+ul.nut{margin:0 0 10px;padding-left:20px}ul.nut li{margin:2px 0}
 .makeup{border:2px dashed var(--red)}
 .note{font-size:14px;color:var(--mute);margin-top:20px}
 @media(prefers-reduced-motion:no-preference){.live .big{transition:color .3s}.bar div{transition:width .4s}}
@@ -248,7 +249,7 @@ Object.assign(T,{dn:{n:'Noge i zadnjica',s:['noge','noge','core','noge','kar'],x
 const isDaily=p=>p&&p.mode=='dnev';
 const daysOf=p=>isDaily(p)?(p.style=='reps'?DAILY.map((x,i)=>[x[0],'r'+i]):DAILY):DAYS[p.days];
 const ckey=p=>isDaily(p)?'d'+(p.min||20)+(p.style=='reps'?'r':''):String(p.days);
-const normP=p=>{p=JSON.parse(JSON.stringify(p));if(p.loc=='buc'){p.loc='kuca';p.eq=['b']}p.eq=p.eq||[];p.mode=p.mode||'klas';p.min=p.min||20;p.style=p.style||'mix';return p};
+const normP=p=>{p=JSON.parse(JSON.stringify(p));if(p.loc=='buc'){p.loc='kuca';p.eq=['b']}p.eq=p.eq||[];p.mode=p.mode||'klas';p.min=p.min||20;p.style=p.style||'mix';p.job=p.job||'sjed';p.sex=p.sex||'';return p};
 const CH={PU:['Sklek','Sklek na koljenima','Sklek uz zid'],JS:['Skok iz čučnja','Čučanj','Čučanj do stolice'],JL:['Skok iz iskoraka','Iskorak unazad','Glute most'],
  FL:['Makaze (flutter kicks)','Mrtva buba','Bird-dog'],LR:['Podizanje nogu ležeći','Makaze (flutter kicks)','Mrtva buba'],PL:['Plank na podlakticama','Bird-dog','Mrtva buba'],
  MC:['Planinar (mountain climbers)','Marširanje u mjestu'],BU:['Burpee','Planinar (mountain climbers)','Jumping jacks','Marširanje u mjestu'],JJ:['Jumping jacks','Boks u mjestu','Marširanje u mjestu'],
@@ -340,6 +341,8 @@ function vPro(){
  '<div class="row"><div><label for="w">Težina (kg)</label><input id="w" type="number" inputmode="decimal" min="30" max="250" step="0.1" required value="'+esc(p.w)+'"></div>'+
  '<div><label for="h">Visina (cm)</label><input id="h" type="number" inputmode="numeric" min="120" max="220" required value="'+esc(p.h)+'"></div>'+
  '<div><label for="ag">Godine</label><input id="ag" type="number" inputmode="numeric" min="14" max="90" required value="'+esc(p.age)+'"></div></div>'+
+ '<label>Pol</label>'+chips('sex',[['m','Muški'],['z','Ženski']])+
+ '<label>Dnevna aktivnost (posao)</label>'+chips('job',[['sjed','Uglavnom sjedim'],['noge','Na nogama'],['fiz','Fizički težak']])+
  '<label>Cilj</label>'+chips('goal',Object.entries(GOAL).map(([k,v])=>[k,v.n]))+'<p class="mute" style="margin:6px 0 0"><b>Definicija mišića</b>: malo više mišića i manje masnoće, da se mišići vide. Serije od 10 ponavljanja, a na kraju svakog treninga kratki kardio.</p>'+
  '<label>Nivo</label>'+chips('lvl',Object.entries(LVL))+
  '<label>Način treninga</label>'+chips('mode',[['klas','Klasični, 2–5 dana nedeljno'],['dnev','Dnevni, svaki dan kratko']])+
@@ -744,12 +747,27 @@ function bindGo(){
 function vNap(){
  if(!S.profile)return vPro();
  const ws=S.weights,f=ws[0],l=ws[ws.length-1],diff=f&&l?(l.kg-f.kg):0,b=bmi(S.profile);
- return '<div class="stats four">'+stat((l?l.kg:'–')+' kg','trenutno')+stat((diff>0?'+':'')+diff.toFixed(1)+' kg','od početka')+stat(b.toFixed(1),'BMI · '+bmiTxt(b))+stat(S.done.length,'treninga ukupno')+'</div>'+vMeas()+
+ return '<div class="stats four">'+stat((l?l.kg:'–')+' kg','trenutno')+stat((diff>0?'+':'')+diff.toFixed(1)+' kg','od početka')+stat(b.toFixed(1),'BMI · '+bmiTxt(b))+stat(S.done.length,'treninga ukupno')+'</div>'+vNutri()+vMeas()+
  vHist()+'<form class="card" id="wf"><h3>Upiši današnju težinu</h3><div style="display:flex;gap:10px;margin-top:10px"><input id="nw" type="number" inputmode="decimal" step="0.1" min="30" max="250" placeholder="npr. 64.5" aria-label="Težina u kg" required><button class="btn" style="flex:none">Dodaj</button></div><p class="mute">Najbolje jednom nedeljno, ujutru, istim danom.</p></form>'+
  '<div class="card"><h3>Kretanje težine</h3>'+(ws.length>1?'<div class="fig"><svg id="ch" role="img" aria-label="Grafikon težine"></svg></div>':'<p class="mute">Grafikon se pojavljuje kad upišeš bar dva mjerenja.</p>')+
  '<table>'+ws.slice().reverse().map(x=>'<tr><td>'+new Date(x.d).toLocaleDateString('sr-Latn-ME')+'</td><td class="n">'+x.kg+' kg</td><td class="n"><button class="x" data-del="'+x.d+'" aria-label="Obriši">×</button></td></tr>').join('')+'</table></div>';
 }
 const MS=[['struk','Struk'],['kuk','Kukovi'],['but','Butina'],['ruka','Nadlaktica']];
+function nutri(p){if(!p.sex)return null;const w=+p.w,h=+p.h,a=+p.age;
+ const bmr=10*w+6.25*h-5*a+(p.sex=='m'?5:-161);
+ const act=isDaily(p)?(p.min==30?1.5:1.45):({2:1.375,3:1.45,4:1.5,5:1.55})[p.days]||1.45;
+ const tdee=bmr*(act+({sjed:0,noge:0.1,fiz:0.2})[p.job||'sjed']);
+ const minor=a<18,f=minor?1:({mrs:0.8,def:0.9,zat:0.95,sna:1.1,kon:1})[p.goal]||1;
+ let kc=tdee*f;if(f<1)kc=Math.max(kc,p.sex=='m'?1500:1200,bmr*1.05);kc=Math.round(kc/50)*50;
+ const pr=Math.round(w*(({mrs:1.8,def:2,zat:1.6,sna:1.8,kon:1.4})[p.goal]||1.6)),fat=Math.round(w*0.9),carb=Math.max(0,Math.round((kc-pr*4-fat*9)/4));
+ return {kc,tdee:Math.round(tdee/50)*50,pr,fat,carb,water:(w*0.035).toFixed(1),f,minor}}
+function vNutri(){const p=S.profile,n=nutri(p);
+ if(!n)return '<div class="card"><h3>Ishrana (okvirno)</h3><p class="mute">Da izračunam kalorije i proteine, u Podešavanjima izaberi pol i dnevnu aktivnost.</p><button class="btn ghost" type="button" id="topro">Otvori Podešavanja</button></div>';
+ const g=n.minor?'Za mlađe od 18 godina prikazujem samo unos za održavanje težine.':n.f<1?'Za tvoj cilj to je oko '+Math.round((1-n.f)*100)+'% manje od održavanja, oko '+n.tdee+' kcal.':n.f>1?'Za snagu to je oko 10% više od održavanja, oko '+n.tdee+' kcal.':'To je unos za održavanje težine.';
+ return '<div class="card"><h3>Ishrana (okvirno)</h3><div class="stats" style="margin:10px 0">'+stat(n.kc,'kcal dnevno')+stat(n.pr+' g','proteina')+stat(n.water+' l','vode')+'</div>'+
+ '<p class="mute" style="margin-top:0">'+g+' Masti oko '+n.fat+' g, ugljenih hidrata oko '+n.carb+' g.</p>'+
+ '<p style="margin-bottom:6px"><b>Proteini u praksi</b> (približno):</p><ul class="nut"><li>100 g piletine ≈ 30 g</li><li>100 g tunjevine ≈ 25 g</li><li>200 g grčkog jogurta ≈ 20 g</li><li>100 g posnog sira ≈ 15–20 g</li><li>1 jaje ≈ 6 g</li></ul>'+
+ '<p class="mute" style="margin-bottom:0">Ovo je procjena po formuli, ne savjet nutricioniste. Ako ti se težina 2–3 nedelje ne mijenja, a cilj je mršavljenje ili definicija, smanji unos za 100–150 kcal. Ako imaš zdravstvenih problema, posavjetuj se sa ljekarom.</p></div>'}
 function vMeas(){const M=S.meas||[],f=M[0],l=M[M.length-1];
  const ch=k=>f&&l&&f[k]&&l[k]&&M.length>1?((l[k]-f[k]>0?'+':'')+(l[k]-f[k]).toFixed(1)):'';
  return '<form class="card" id="mf"><h3>Mjere tijela (cm)</h3><p class="mute" style="margin:4px 0 0">Jednom mjesečno, ujutru, centimetrom preko gole kože. Upiši samo ono što izmjeriš.</p><div class="row">'+
@@ -760,6 +778,7 @@ function vMeas(){const M=S.meas||[],f=M[0],l=M[M.length-1];
  M.slice().reverse().map(x=>'<tr><td>'+fmtD(x.d)+x.d.slice(0,4)+'.</td>'+MS.map(y=>'<td class="n" data-l="'+y[1]+'">'+(x[y[0]]||'–')+'</td>').join('')+'<td class="n"><button type="button" class="x" data-mdel="'+x.d+'" aria-label="Obriši">×</button></td></tr>').join('')+'</tbody></table>':'')+'</form>'}
 let ro=null;
 function bindNap(){
+ {const t=$('#topro');if(t)t.addEventListener('click',()=>setTab('pro'))}
  $('#mf').addEventListener('submit',e=>{e.preventDefault();const o={d:today()};let n=0;MS.forEach(([k])=>{const v=+$('#m_'+k).value;if(v>=10&&v<=250){o[k]=v;n++}});
   if(!n){$('#mmsg').textContent='Upiši bar jednu mjeru.';return}S.meas=(S.meas||[]).filter(x=>x.d!=o.d).concat(o).sort((a,b)=>a.d<b.d?-1:1);save();render()});
  document.querySelectorAll('[data-mdel]').forEach(b=>b.addEventListener('click',()=>{S.meas=(S.meas||[]).filter(x=>x.d!=b.dataset.mdel);save();render()}));
