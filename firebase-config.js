@@ -8,4 +8,4 @@ self.firebaseConfig = {
   appId: "1:563557228509:web:97530c1c44bf3a55902034"
 };
 // Za podsjetnike (kasnije): Project settings → Cloud Messaging → Web Push certificates → Generate key pair
-self.vapidKey = "OVDJE_VAPID_KLJUC";
+self.vapidKey = "BFVPREMzOXbHIWmU3IcehmqHxQD9YXFpt3M4N-yVaZJ2XUtmGP90rwPbFrFUoHziON8WPrJGGL5Aa8Ehsg7h-qs";
