@@ -222,6 +222,15 @@ const GOAL={mrs:{n:'Mršavljenje',sets:3,reps:15,rest:40,sec:30},zat:{n:'Zatezan
 const LVL={1:'Početnik',2:'Srednji',3:'Napredni'};
 const LOC={kuca:['0'],buc:['0','b'],ter:['0','b','t']};
 EX.push(
+ {n:'Statički čučanj na platformi',g:'noge',eq:'v',d:1,t:1,st:['koljena'],o:'Stani na uključenu platformu, stopala u širini kukova, i spusti se u polučučanj. Drži položaj.',s:'Koljena uvijek blago savijena, nikad ispružena do kraja dok platforma radi.'},
+ {n:'Podizanje na prste na platformi',g:'noge',eq:'v',d:1,t:1,st:[],o:'Stani na platformu i polako se podiži na prste pa spuštaj.',s:'Ako treba, pridrži se za nešto zbog ravnoteže.'},
+ {n:'Iskorak sa nogom na platformi',g:'noge',eq:'v',d:2,t:1,st:['koljena'],o:'Prednju nogu stavi na platformu, zadnju iza sebe, i drži iskorak. Pola vremena po nozi.',s:'Prednje koljeno ostaje iznad stopala.'},
+ {n:'Most sa stopalima na platformi',g:'noge',eq:'v',d:1,t:1,st:[],o:'Lezi na pod, stopala stavi na platformu i podigni kukove. Drži gore.',s:'Stegni zadnjicu, ne izvijaj donji dio leđa.'},
+ {n:'Plank sa laktovima na platformi',g:'core',eq:'v',d:2,t:1,st:['ramena'],o:'Podlaktice na platformi, noge ispružene na podu, tijelo pravo. Drži.',s:'Stomak stegnut, kukovi ne vise.'},
+ {n:'Sklek sa rukama na platformi',g:'gur',eq:'v',d:2,st:['ramena'],o:'Ruke na platformi, uradi sklek polako dok platforma radi.',s:'Ako je teško, radi ga sa koljenima na podu.'}
+);
+
+EX.push(
  {n:'Skok iz čučnja',g:'noge',eq:'0',d:2,hi:1,st:['koljena'],o:'Spusti se u čučanj, pa eksplozivno skoči uvis i mekano doskoči nazad u čučanj.',s:'Doskok tiho, na prednji dio stopala, koljena prate prste.'},
  {n:'Skok iz iskoraka',g:'noge',eq:'0',d:3,hi:1,st:['koljena'],o:'Iz iskoraka skoči i u vazduhu zamijeni noge, pa doskoči u iskorak na drugu stranu.',s:'Ako je preteško, radi obične iskorake bez skoka.'},
  {n:'Makaze (flutter kicks)',g:'core',eq:'0',d:1,st:[],o:'Lezi na leđa, ruke ispod zadnjice, podigni ispružene noge malo od poda i naizmjenično ih mrdaj gore-dolje.',s:'Donji dio leđa drži pritisnut uz pod.'},
@@ -243,7 +252,7 @@ EX.push(
  {n:'Negativni zgibovi',g:'vuc',eq:'p',d:2,st:['ramena'],o:'Sa stolice dođi u položaj da je brada iznad vratila, pa se spuštaj što sporije, 3 do 5 sekundi.',s:'Najbolji put do prvog pravog zgiba.'},
  {n:'Zgibovi',g:'vuc',eq:'p',d:3,st:['ramena'],o:'Iz visa povuci se dok brada ne pređe vratilo, pa se kontrolisano spusti.',s:'Bez ljuljanja, vuci laktovima nadolje.'}
 );
-const eqSet=p=>p.loc=='ter'?['0','b','t','r','p','k']:p.loc=='buc'?['0','b']:['0'].concat(p.eq||[]);
+const eqSet=p=>p.loc=='ter'?['0','b','t','r','p','k','v']:p.loc=='buc'?['0','b']:['0'].concat(p.eq||[]);
 const DAILY=[['Ponedeljak','dn'],['Utorak','dg'],['Srijeda','dk'],['Četvrtak','df'],['Petak','dn'],['Subota','dg'],['Nedelja','dl']];
 Object.assign(T,{dn:{n:'Noge i zadnjica',s:['noge','noge','core','noge','kar'],x:'noge'},dg:{n:'Gornji dio tijela',s:['gur','vuc','gur','vuc','core'],x:'core'},dk:{n:'Kardio i stomak',s:['kar','core','kar','noge','core'],x:'kar'},df:{n:'Cijelo tijelo',s:['noge','gur','vuc','core','kar'],x:'noge'},dl:{n:'Lagani dan',s:['core','vuc','noge','core','core'],x:'vuc'}});
 const isDaily=p=>p&&p.mode=='dnev';
@@ -349,7 +358,7 @@ function vPro(){
  '<div id="f_days"'+(p.mode=='dnev'?' hidden':'')+'><label>Dana nedeljno</label>'+chips('days',[[2,'2'],[3,'3'],[4,'4'],[5,'5']])+'</div>'+
  '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'><label>Koliko traje dnevni trening</label>'+chips('min',[[20,'20 min'],[30,'30 min']])+'<p class="mute" style="margin:6px 0 0">Vježbe na vrijeme, kružno, sa kratkim pauzama. Nedelja je lakši dan.</p><label>Stil dnevnog treninga</label>'+chips('style',[['mix','Mješovito, svaki dan drugi dio tijela'],['reps','Sklekovi, skokovi i stomak (kao dailyrepsguy)']])+'<p class="mute" style="margin:6px 0 0">Drugi stil je pravljen po uzoru na trening koji dailyrepsguy opisuje javno: sopstvena težina, sklekovi i skokovi svaki dan, uz kettlebell i vratilo ako ih imaš. Nije njegov zvanični program.</p></div>'+
  '<label>Gdje treniraš</label>'+chips('loc',[['kuca','Kod kuće'],['ter','Teretana']])+
- '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bučice'],['k','Kettlebell'],['r','Elastična traka'],['p','Vratilo (šipka za zgibove)']],1)+'</div>'+
+ '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bučice'],['k','Kettlebell'],['r','Elastična traka'],['p','Vratilo (šipka za zgibove)'],['v','Vibraciona platforma']],1)+'<p class="mute" style="margin:6px 0 0">Vibracionu platformu ne koristi u trudnoći, sa pejsmejkerom, epilepsijom, trombozom, implantatom u zglobu ili poslije skorašnje operacije, osim ako ljekar kaže da smiješ.</p></div>'+
  '<label>Problemi (izbaciću vježbe koje ih opterećuju)</label>'+chips('prob',[['koljena','Koljena'],['leđa','Leđa'],['ramena','Ramena']],1)+
  '<p id="err" class="mute" style="color:var(--red)"></p><button class="btn">'+(S.profile?'Sačuvaj i osvježi plan':'Napravi moj plan')+'</button></form>'+
  (S.profile?'<div class="card"><h3>Kopija podataka</h3><p class="mute">Kopiraj sve podatke i sačuvaj ih npr. u Bilješke na telefonu. Kasnije ih zalijepi ovdje da vratiš sve kako je bilo.</p><div class="acts" style="justify-content:flex-start"><button type="button" class="btn ghost" id="bkc">Kopiraj podatke</button><button type="button" class="btn ghost" id="bki">Učitaj kopiju</button></div><textarea id="bkt" rows="4" style="display:none;width:100%;margin-top:10px;font:13px monospace;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)"></textarea><button type="button" class="btn" id="bkl" style="display:none;margin-top:8px">Vrati podatke iz kopije</button><p class="mute" id="bkm"></p></div>':'')+
@@ -522,6 +531,27 @@ Object.assign(MOT,{
 });
 Object.assign(MAPM,{'Skok iz čučnja':['jsq','jump squat'],'Skok iz iskoraka':['lg','jumping lunges'],'Makaze (flutter kicks)':['flut','flutter kicks'],'Podizanje nogu ležeći':['lraise','lying leg raises'],'Zamah kettlebellom':['kbs','kettlebell swing'],'Goblet čučanj sa kettlebellom':['gb','kettlebell goblet squat'],'Veslanje kettlebellom':['row1','kettlebell row'],'Potisak kettlebella iznad glave':['ohp','kettlebell overhead press']});
 MAPMd['Zamah kettlebellom']=1;MAPMd['Potisak kettlebella iznad glave']=1;MAPMd['Goblet čučanj sa kettlebellom']=1;
+
+
+Object.assign(PR_,{
+ vib:'<rect x="76" y="124" width="54" height="7" rx="2" fill="var(--line)"/>',
+ vib2:'<rect x="118" y="124" width="46" height="7" rx="2" fill="var(--line)"/>',
+ vib3:'<rect x="108" y="124" width="44" height="7" rx="2" fill="var(--line)"/>'});
+const shY=(P,dy)=>Object.fromEntries(Object.entries(P).map(([k,v])=>[k,[v[0],v[1]+dy]]));
+const VSQ={p:[86,96],k:[110,100],a:[104,124],t:[112,124],s:[96,62],h:[100,50],e:[110,70],w:[124,68]};
+const VLG={p:[80,98],k:[104,100],a:[104,124],t:[112,124],k2:[70,122],a2:[46,127],t2:[40,130],s:[80,62],h:[80,50],e:[81,80],w:[82,96]};
+const VPL={a:[40,126],t:[34,130],k:[70,116],p:[100,106],s:[132,98],h:[144,92],e:[132,123],w:[150,123]};
+const VPU={a:[40,128],t:[34,130],k:[70,116],p:[100,104],s:[134,90],h:[146,83],e:[134,107],w:[134,123]};
+const VBR={h:[38,121],s:[52,124],p:[90,126],k:[112,96],a:[126,121],t:[134,123],e:[68,128],w:[84,128]};
+Object.assign(MOT,{
+ vsq:{f:[pz(VSQ),pz(shY(VSQ,1.3))],pr:'vib',d:160},
+ vcalf:{f:[pz(shY(ST,-6)),pz(shY({h:[100,24],s:[100,36],e:[102,54],w:[104,70],p:[100,72],k:[102,98],a:[106,124],t:[114,130]},-6),{t:[114,124]})],pr:'vib',d:1600},
+ vlg:{f:[pz(VLG),pz(shY(VLG,1.3),{a2:[46,127],t2:[40,130]})],pr:'vib',d:160},
+ vpl:{f:[pz(VPL),pz(shY(VPL,1),{a:[40,126],t:[34,130]})],pr:'vib2',d:160},
+ vpu:{f:[pz(VPU),pz(VPU,{s:[136,110],h:[148,105],e:[122,104],p:[102,114],k:[70,121]})],pr:'vib2',d:2200},
+ vbr:{f:[pz(VBR,{p:[90,104],k:[116,92]}),pz(VBR,{p:[90,103],k:[116,91],a:[126,122],t:[134,124]})],pr:'vib3',d:160}
+});
+Object.assign(MAPM,{'Statički čučanj na platformi':['vsq','vibration plate squat'],'Podizanje na prste na platformi':['vcalf','vibration plate calf raise'],'Iskorak sa nogom na platformi':['vlg','vibration plate lunge'],'Most sa stopalima na platformi':['vbr','vibration plate glute bridge'],'Plank sa laktovima na platformi':['vpl','vibration plate plank'],'Sklek sa rukama na platformi':['vpu','vibration plate push up']});
 
 const mkBtns=(key,v)=>'<div class="mk"><button class="mb ok'+(v=='ok'?' on':'')+'" data-mk="'+key+'|ok" aria-label="Odrađeno" aria-pressed="'+(v=='ok')+'">✓</button><button class="mb no'+(v=='no'?' on':'')+'" data-mk="'+key+'|no" aria-label="Nije odrađeno" aria-pressed="'+(v=='no')+'">✗</button></div>';
 const exLi=(e,key,v)=>'<li class="'+(v||'')+'">'+anim(e.n,'thumb')+'<div><b>'+e.n+'</b><br><span class="dose">'+dose(e)+'</span>'+(sugg(e)?'<br><span class="sug">'+sugg(e)+'</span>':'')+'</div>'+mkBtns(key,v)+'<details><summary>Kako se radi</summary>'+anim(e.n,'demo')+e.o+' <br><strong>Savjet:</strong> '+e.s+'<br>'+ytLink(e.n)+'</details></li>';
