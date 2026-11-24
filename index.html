@@ -159,7 +159,7 @@ const wkOf=s=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()-((d.getDay(
 const wkStart=off=>addD(wkOf(today()),off*7);
 const range=off=>{const a=wkStart(off),b=addD(a,6),f=x=>x.slice(8)+'.'+x.slice(5,7)+'.';return f(a)+' – '+f(b)};
 
-// g: noge, gur (guranje), vuc (vuča), core, kar (kardio); eq: 0 bez opreme, b bućice, t teretana; d: težina 1-3; hi: skakanje; st: opterećuje
+// g: noge, gur (guranje), vuc (vuča), core, kar (kardio); eq: 0 bez opreme, b bučice, t teretana; d: težina 1-3; hi: skakanje; st: opterećuje
 const EX=[
 {n:'Čučanj do stolice',g:'noge',eq:'0',d:1,st:[],o:'Stani ispred stolice, spuštaj se kao da sjedaš dok ne dodirneš stolicu, pa ustani.',s:'Koljena prate prste, težina na petama.'},
 {n:'Glute most',g:'noge',eq:'0',d:1,st:[],o:'Lezi na leđa, savij koljena i podigni kukove dok tijelo ne bude u liniji od ramena do koljena.',s:'Stegni zadnjicu na vrhu, ne izvijaj donji dio leđa.'},
@@ -167,21 +167,21 @@ const EX=[
 {n:'Čučanj',g:'noge',eq:'0',d:2,st:['koljena'],o:'Stopala u širini ramena, spuštaj kukove unazad i nadolje do paralele, pa ustani.',s:'Grudi gore, pete ne odižu.'},
 {n:'Iskorak unazad',g:'noge',eq:'0',d:2,st:['koljena'],o:'Korakni jednom nogom unazad i spusti zadnje koljeno blizu poda. Naizmjenično.',s:'Prednje koljeno ostaje iznad stopala.'},
 {n:'Most na jednoj nozi',g:'noge',eq:'0',d:3,st:[],o:'Kao glute most, ali sa jednom nogom ispruženom u vazduhu. Broj po nozi.',s:'Kukovi ostaju ravni, ne naginju se.'},
-{n:'Čučanj sa bućicom (goblet)',g:'noge',eq:'b',d:2,st:['koljena'],o:'Drži bućicu uz grudi objema rukama i radi čučanj.',s:'Laktovi idu između koljena.'},
-{n:'Rumunsko mrtvo dizanje',g:'noge',eq:'b',d:2,st:['leđa'],o:'Bućice ispred butina, guraj kukove unazad i spuštaj bućice niz noge do ispod koljena.',s:'Leđa ravna cijelo vrijeme, koljena blago savijena.'},
-{n:'Iskorak sa bućicama',g:'noge',eq:'b',d:3,st:['koljena'],o:'Bućice u rukama, iskorak unazad naizmjenično.',s:'Kontrolisano spuštanje.'},
+{n:'Čučanj sa bučicom (goblet)',g:'noge',eq:'b',d:2,st:['koljena'],o:'Drži bučicu uz grudi objema rukama i radi čučanj.',s:'Laktovi idu između koljena.'},
+{n:'Rumunsko mrtvo dizanje',g:'noge',eq:'b',d:2,st:['leđa'],o:'Bučice ispred butina, guraj kukove unazad i spuštaj bučice niz noge do ispod koljena.',s:'Leđa ravna cijelo vrijeme, koljena blago savijena.'},
+{n:'Iskorak sa bučicama',g:'noge',eq:'b',d:3,st:['koljena'],o:'Bučice u rukama, iskorak unazad naizmjenično.',s:'Kontrolisano spuštanje.'},
 {n:'Leg press',g:'noge',eq:'t',d:2,st:['koljena'],o:'Na mašini guraj platformu nogama, ne zaključavaj koljena na vrhu.',s:'Donji dio leđa prislonjen uz sjedište.'},
-{n:'Hip thrust na klupi',g:'noge',eq:'t',d:3,st:[],o:'Leđa na klupi, šipka ili bućica na kukovima, podiži kukove.',s:'Brada blago spuštena, pogled naprijed.'},
+{n:'Hip thrust na klupi',g:'noge',eq:'t',d:3,st:[],o:'Leđa na klupi, šipka ili bučica na kukovima, podiži kukove.',s:'Brada blago spuštena, pogled naprijed.'},
 {n:'Sklek uz zid',g:'gur',eq:'0',d:1,st:[],o:'Ruke na zidu u visini ramena, spuštaj grudi prema zidu i odgurni se.',s:'Tijelo pravo kao daska.'},
 {n:'Sklek na koljenima',g:'gur',eq:'0',d:2,st:['ramena'],o:'Sklek sa koljenima na podu.',s:'Laktovi pod uglom od oko 45° od tijela.'},
 {n:'Sklek',g:'gur',eq:'0',d:3,st:['ramena'],o:'Klasičan sklek, grudi skoro do poda.',s:'Stomak stegnut, kukovi ne vise.'},
-{n:'Potisak bućica na podu',g:'gur',eq:'b',d:1,st:[],o:'Lezi na leđa, bućice iznad grudi, spuštaj dok laktovi ne dodirnu pod.',s:'Pod štiti ramena, dobra vježba za početak.'},
-{n:'Potisak bućica iznad glave',g:'gur',eq:'b',d:2,st:['ramena','leđa'],o:'Sjedeći ili stojeći guraj bućice iznad glave.',s:'Ne izvijaj leđa, stomak stegnut.'},
+{n:'Potisak bučica na podu',g:'gur',eq:'b',d:1,st:[],o:'Lezi na leđa, bučice iznad grudi, spuštaj dok laktovi ne dodirnu pod.',s:'Pod štiti ramena, dobra vježba za početak.'},
+{n:'Potisak bučica iznad glave',g:'gur',eq:'b',d:2,st:['ramena','leđa'],o:'Sjedeći ili stojeći guraj bučice iznad glave.',s:'Ne izvijaj leđa, stomak stegnut.'},
 {n:'Potisak na mašini za grudi',g:'gur',eq:'t',d:2,st:[],o:'Sjedi na mašini i guraj ručke naprijed.',s:'Ručke u visini sredine grudi.'},
 {n:'Y-T podizanje na stomaku',g:'vuc',eq:'0',d:1,st:[],o:'Lezi na stomak, podiži ruke u obliku slova Y, pa T, i polako spuštaj.',s:'Odlično za držanje i leđa.'},
 {n:'Superman',g:'vuc',eq:'0',d:2,st:['leđa'],o:'Na stomaku istovremeno podigni ruke i noge, zadrži 2 sekunde.',s:'Pogled u pod, vrat opušten.'},
-{n:'Veslanje bućicom jednom rukom',g:'vuc',eq:'b',d:2,st:[],o:'Osloni ruku i koljeno na klupu ili stolicu, vuci bućicu prema kuku.',s:'Lopatica ide unazad, leđa ravna.'},
-{n:'Veslanje sa obje bućice u pretklonu',g:'vuc',eq:'b',d:3,st:['leđa'],o:'Pretklon sa ravnim leđima, vuci obje bućice prema stomaku.',s:'Ne trzaj, kontroliši spuštanje.'},
+{n:'Veslanje bučicom jednom rukom',g:'vuc',eq:'b',d:2,st:[],o:'Osloni ruku i koljeno na klupu ili stolicu, vuci bučicu prema kuku.',s:'Lopatica ide unazad, leđa ravna.'},
+{n:'Veslanje sa obje bučice u pretklonu',g:'vuc',eq:'b',d:3,st:['leđa'],o:'Pretklon sa ravnim leđima, vuci obje bučice prema stomaku.',s:'Ne trzaj, kontroliši spuštanje.'},
 {n:'Lat povlačenje',g:'vuc',eq:'t',d:1,st:[],o:'Na mašini vuci šipku do vrha grudi.',s:'Vuci laktovima, ne rukama.'},
 {n:'Veslanje na sajli sjedeći',g:'vuc',eq:'t',d:2,st:[],o:'Sjedi uspravno i vuci ručku prema stomaku.',s:'Ramena dolje, daleko od ušiju.'},
 {n:'Mrtva buba',g:'core',eq:'0',d:1,st:[],o:'Lezi na leđa, ruke gore, koljena savijena. Spuštaj suprotnu ruku i nogu ka podu.',s:'Donji dio leđa stalno pritisnut uz pod.'},
@@ -314,7 +314,7 @@ function vPro(){
  '<div id="f_days"'+(p.mode=='dnev'?' hidden':'')+'><label>Dana nedjeljno</label>'+chips('days',[[2,'2'],[3,'3'],[4,'4'],[5,'5']])+'</div>'+
  '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'><label>Koliko traje dnevni trening</label>'+chips('min',[[20,'20 min'],[30,'30 min']])+'<p class="mute" style="margin:6px 0 0">Svaki dan drugi dio tijela, vježbe na vrijeme sa kratkim pauzama. Nedjelja je lakši dan.</p></div>'+
  '<label>Gdje treniraš</label>'+chips('loc',[['kuca','Kod kuće'],['ter','Teretana']])+
- '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bućice'],['k','Kettlebell'],['r','Elastična traka'],['p','Šipka za zgibove']],1)+'</div>'+
+ '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bučice'],['k','Kettlebell'],['r','Elastična traka'],['p','Šipka za zgibove']],1)+'</div>'+
  '<label>Problemi (izbaciću vježbe koje ih opterećuju)</label>'+chips('prob',[['koljena','Koljena'],['leđa','Leđa'],['ramena','Ramena']],1)+
  '<p id="err" class="mute" style="color:var(--red)"></p><button class="btn">'+(S.profile?'Sačuvaj i osvježi plan':'Napravi moj plan')+'</button></form>'+
  (S.profile?'<div class="card"><h3>Kopija podataka</h3><p class="mute">Kopiraj sve podatke i sačuvaj ih npr. u Bilješke na telefonu. Kasnije ih zalijepi ovdje da vratiš sve kako je bilo.</p><div class="acts" style="justify-content:flex-start"><button type="button" class="btn ghost" id="bkc">Kopiraj podatke</button><button type="button" class="btn ghost" id="bki">Učitaj kopiju</button></div><textarea id="bkt" rows="4" style="display:none;width:100%;margin-top:10px;font:13px monospace;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)"></textarea><button type="button" class="btn" id="bkl" style="display:none;margin-top:8px">Vrati podatke iz kopije</button><p class="mute" id="bkm"></p></div>':'')+
@@ -429,8 +429,8 @@ const MOT={
  burp:{f:[pz({}),pz(SQH),pz(PU),pz(SQH),pz({h:[100,18],s:[100,30],p:[100,66],k:[102,92],a:[104,118],t:[112,118],e:[98,14],w:[96,0]})],d:5000},
  bike:{f:[pz(BK,BKU,sw(BKD)),pz(BK,BKD,sw(BKU))],pr:'bike',d:900}
 };
-const MAPM={'Čučanj do stolice':['sqc','chair squat'],'Glute most':['br','glute bridge'],'Podizanje na prste':['calf','standing calf raise'],'Čučanj':['sq','bodyweight squat'],'Iskorak unazad':['lg','reverse lunge'],'Most na jednoj nozi':['br1','single leg glute bridge'],'Čučanj sa bućicom (goblet)':['gb','goblet squat'],'Rumunsko mrtvo dizanje':['rdl','dumbbell romanian deadlift'],'Iskorak sa bućicama':['lg','dumbbell reverse lunge'],'Leg press':['sq','leg press machine'],'Hip thrust na klupi':['br','hip thrust'],'Sklek uz zid':['wall','wall push up'],'Sklek na koljenima':['kp','knee push up'],'Sklek':['pu','push up'],'Potisak bućica na podu':['fp','dumbbell floor press'],'Potisak bućica iznad glave':['ohp','dumbbell shoulder press'],'Potisak na mašini za grudi':['mcp','chest press machine'],'Y-T podizanje na stomaku':['yt','prone Y T raise'],'Superman':['sup','superman exercise'],'Veslanje bućicom jednom rukom':['row1','one arm dumbbell row'],'Veslanje sa obje bućice u pretklonu':['row2','bent over dumbbell row'],'Lat povlačenje':['lat','lat pulldown'],'Veslanje na sajli sjedeći':['crow','seated cable row'],'Mrtva buba':['dbug','dead bug exercise'],'Bird-dog':['bird','bird dog exercise'],'Plank na podlakticama':['plank','forearm plank'],'Bočni plank':['splank','side plank'],'Marširanje u mjestu':['march','high knee marching in place'],'Boks u mjestu':['box','shadow boxing workout'],'Planinar (mountain climbers)':['climb','mountain climbers'],'Jumping jacks':['jj','jumping jacks'],'Burpee':['burp','burpee'],'Sobni bicikl':['bike','stationary bike']};
-const MAPMd={'Iskorak sa bućicama':2,'Leg press':0};
+const MAPM={'Čučanj do stolice':['sqc','chair squat'],'Glute most':['br','glute bridge'],'Podizanje na prste':['calf','standing calf raise'],'Čučanj':['sq','bodyweight squat'],'Iskorak unazad':['lg','reverse lunge'],'Most na jednoj nozi':['br1','single leg glute bridge'],'Čučanj sa bučicom (goblet)':['gb','goblet squat'],'Rumunsko mrtvo dizanje':['rdl','dumbbell romanian deadlift'],'Iskorak sa bučicama':['lg','dumbbell reverse lunge'],'Leg press':['sq','leg press machine'],'Hip thrust na klupi':['br','hip thrust'],'Sklek uz zid':['wall','wall push up'],'Sklek na koljenima':['kp','knee push up'],'Sklek':['pu','push up'],'Potisak bučica na podu':['fp','dumbbell floor press'],'Potisak bučica iznad glave':['ohp','dumbbell shoulder press'],'Potisak na mašini za grudi':['mcp','chest press machine'],'Y-T podizanje na stomaku':['yt','prone Y T raise'],'Superman':['sup','superman exercise'],'Veslanje bučicom jednom rukom':['row1','one arm dumbbell row'],'Veslanje sa obje bučice u pretklonu':['row2','bent over dumbbell row'],'Lat povlačenje':['lat','lat pulldown'],'Veslanje na sajli sjedeći':['crow','seated cable row'],'Mrtva buba':['dbug','dead bug exercise'],'Bird-dog':['bird','bird dog exercise'],'Plank na podlakticama':['plank','forearm plank'],'Bočni plank':['splank','side plank'],'Marširanje u mjestu':['march','high knee marching in place'],'Boks u mjestu':['box','shadow boxing workout'],'Planinar (mountain climbers)':['climb','mountain climbers'],'Jumping jacks':['jj','jumping jacks'],'Burpee':['burp','burpee'],'Sobni bicikl':['bike','stationary bike']};
+const MAPMd={'Iskorak sa bučicama':2,'Leg press':0};
 const SEG=[['p','k2'],['k2','a2'],['a2','t2'],['s','e2'],['e2','w2'],['s','p'],['p','k'],['k','a'],['a','t'],['s','e'],['e','w']];
 const anim=(name,cls)=>{const m=MAPM[name];return m?'<svg class="anim '+cls+'" viewBox="0 0 200 140" data-m="'+m[0]+'" data-n="'+esc(name)+'" role="img" aria-label="Animacija vježbe"></svg>':''};
 const ytLink=name=>{const m=MAPM[name];return m?'<a class="yt" href="https://www.youtube.com/results?search_query='+encodeURIComponent(m[1]+' proper form')+'" target="_blank" rel="noopener">▶ Pogledaj video na YouTube-u</a>':''};
@@ -763,6 +763,9 @@ onAuthStateChanged(auth,async u=>{
  tab=S.profile?'plan':'pro';render();
 });
 function render(){
+ if(S.log||S.custom){const fx=n=>String(n).replace(/u\u0107ic/g,'učic');
+  if(S.log)for(const k of Object.keys(S.log)){const n=fx(k);if(n!==k){S.log[n]=(S.log[n]||[]).concat(S.log[k]);delete S.log[k]}}
+  if(S.custom)for(const c of Object.values(S.custom))for(const d in c)if(Array.isArray(c[d]))c[d]=c[d].map(fx)}
  document.documentElement.dataset.hint=S.hideHow?'off':'';
  QW=null;
  $('#nav').style.display=uid?'':'none';
