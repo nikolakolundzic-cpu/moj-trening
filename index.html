@@ -203,7 +203,7 @@ ol.ex li{transition:background .2s}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signInWithRedirect,GoogleAuthProvider,sendPasswordResetEmail,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {initializeFirestore,persistentLocalCache,doc,getDoc,setDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {initializeFirestore,persistentLocalCache,doc,getDoc,setDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {getMessaging,getToken,isSupported} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 const firebaseConfig=self.firebaseConfig;
 let swReg=null;
@@ -213,8 +213,12 @@ const fb=initializeApp(firebaseConfig),auth=getAuth(fb),fdb=initializeFirestore(
 const $=s=>document.querySelector(s);
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const EMPTY=()=>({profile:null,start:null,weights:[],done:[],skin:null});
-let S=EMPTY(),uid=null,authReady=false,saveT=null,saving=Promise.resolve();
-const save=()=>{if(!uid)return;clearTimeout(saveT);const u=uid;saveT=setTimeout(()=>{if(S.remind&&S.profile){const days={},td=today();for(const off of [0,1,2,3]){const plan=build(S.profile),wk=wkStart(off);plan.forEach((d,i)=>{const dt=dateOf(wk,i,d.dn);if(dt&&dt>=td)days[dt]=d.name})}S.remind.days=days}const body=JSON.parse(JSON.stringify(S));saving=saving.then(()=>setDoc(doc(fdb,'users',u),body)).catch(e=>console.log('[trening] save',e))},500)};
+let S=EMPTY(),uid=null,authReady=false,saveT=null,saving=Promise.resolve(),lastSaved='',unsub=null;
+const canon=o=>JSON.stringify(o,(k,v)=>v&&typeof v=='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v);
+function doSave(){if(!uid)return;const u=uid;if(S.remind&&S.profile){const days={},td=today();for(const off of [0,1,2,3]){const plan=build(S.profile),wk=wkStart(off);plan.forEach((d,i)=>{const dt=dateOf(wk,i,d.dn);if(dt&&dt>=td)days[dt]=d.name})}S.remind.days=days}const body=JSON.parse(JSON.stringify(S)),js=canon(body);if(js===lastSaved)return;lastSaved=js;saving=saving.then(()=>setDoc(doc(fdb,'users',u),body)).catch(e=>console.log('[trening] save',e))}
+function flush(){if(saveT){clearTimeout(saveT);saveT=null;doSave()}}
+const save=()=>{if(!uid)return;clearTimeout(saveT);saveT=setTimeout(()=>{saveT=null;doSave()},500)};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='hidden')flush()});addEventListener('pagehide',flush);
 const lday=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const today=()=>lday(new Date());
 const addD=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return lday(d)};
@@ -330,7 +334,7 @@ function pickChain(p,ch,used){const ok=allowedEx(Object.assign({},p,{lvl:String(
 
 const bmi=p=>p.w/((p.h/100)**2);
 const bmiTxt=b=>b<18.5?'ispod normale':b<25?'normalna težina':b<30?'povećana težina':'gojaznost';
-const week=()=>S.start?Math.floor((Date.now()-new Date(S.start))/6048e5)+1:1;
+const week=()=>S.start?Math.max(1,Math.floor((Date.now()-new Date(S.start+'T12:00:00'))/6048e5)+1):1;
 
 function allowedEx(p){const low=bmi(p)>=30||p.age>=55||p.prob.includes('koljena'),lvl=+p.lvl;const Q=eqSet(p);return e=>Q.includes(e.eq)&&e.d<=lvl&&!(low&&e.hi)&&!e.st.some(s=>p.prob.includes(s))}
 function poolFor(p,g){const ok=allowedEx(p);let c=EX.filter(e=>e.g==g&&ok(e));
@@ -362,7 +366,7 @@ function bindSkin(){$('#skin').addEventListener('click',e=>{const b=e.target.clo
 applySkin();
 let tab='plan',W=null,tick=null;
 function setTab(t){tab=t;editDay=null;render()}
-$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t=='out'){stopTick();W=null;signOut(auth);return}setTab(b.dataset.t)});
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t=='out'){stopTick();W=null;flush();signOut(auth);return}setTab(b.dataset.t)});
 
 function header(){
  const p=S.profile;
@@ -421,7 +425,7 @@ function bindPro(){
  {const h=$('#hint');if(h)h.addEventListener('click',e=>{const b=e.target.closest('[data-h]');if(!b)return;S.hideHow=b.dataset.h=='1';if(!S.hideHow)delete S.hideHow;save();render()})}
  
  bindRemind();
- if($('#lo')){$('#acc').textContent='Prijavljen: '+(auth.currentUser&&auth.currentUser.email||'');$('#lo').addEventListener('click',()=>{stopTick();W=null;signOut(auth)})}
+ if($('#lo')){$('#acc').textContent='Prijavljen: '+(auth.currentUser&&auth.currentUser.email||'');$('#lo').addEventListener('click',()=>{stopTick();unwake();W=null;flush();signOut(auth)})}
  document.querySelectorAll('.chips[data-k]').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const k=g.dataset.k,v=b.dataset.v;
   if(g.dataset.m){const a=draft[k];const i=a.indexOf(v);i<0?a.push(v):a.splice(i,1);b.classList.toggle('on')}
   else{draft[k]=k=='days'||k=='min'?+v:v;g.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c==b))}vis()}));
@@ -717,7 +721,7 @@ const isWt=e=>e.eq=='b'||e.eq=='t';
 function lastLog(e){const L=(S.log||{})[e.n];return L&&L.length?L[L.length-1]:null}
 function sugKg(e){const l=lastLog(e);if(!l)return '';const kg=Math.max(0,...l.s.map(x=>+x.kg||0));if(!kg)return '';return l.s.every(x=>x.r>=l.tg)?kg+(kg<10?1:2.5):kg}
 function sugg(e){const l=lastLog(e);if(!l)return '';const kg=Math.max(0,...l.s.map(x=>+x.kg||0));
- let t='Zadnji put: '+l.s.map(x=>x.r).join(', ')+(e.t?' s':'')+(kg?' · '+kg+' kg':'');
+ let t='Zadnji put: '+l.s.map(x=>+x.r||0).join(', ')+(e.t?' s':'')+(kg?' · '+kg+' kg':'');
  if(kg&&l.s.every(x=>x.r>=l.tg))t+=' → probaj '+sugKg(e)+' kg';else if(kg&&l.s.some(x=>x.r<l.tg-3))t+=' → ostani na '+kg+' kg';
  return t}
 function commitLog(i){const e=W.d.ex[i],rec=(W.rec||{})[i];if(!rec||!rec.length||W.mode)return;S.log=S.log||{};const L=S.log[e.n]=S.log[e.n]||[];
@@ -781,14 +785,14 @@ function vHist(){
  return rows.length?'<div class="card"><h3>Prethodne nedelje</h3><table>'+rows.join('')+'</table></div>':'';
 }
 let actx=null;
-function tone(f,d){try{actx=actx||new AudioContext();const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.frequency.value=f;g.gain.value=.15;o.start();o.stop(actx.currentTime+d)}catch(e){}}
+function tone(f,d){try{actx=actx||new AudioContext();if(actx.state==='suspended')actx.resume();const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.frequency.value=f;g.gain.value=.15;o.start();o.stop(actx.currentTime+d)}catch(e){}}
 function beep(){tone(880,.3);try{navigator.vibrate&&navigator.vibrate(300)}catch(e){}}
 let wl=null;async function wake(){try{if('wakeLock' in navigator&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}catch(e){}}
 function unwake(){try{wl&&wl.release()}catch(e){}wl=null}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&W&&W.ph!='done')wake()});
 function startW(k){wake();const d=withMake(build(S.profile))[k];W={k,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go')}
 function stopTick(){clearInterval(tick);tick=null}
-function run(sec,ph){stopTick();W.ph=ph;W.t=sec;W.tt=sec;render();tick=setInterval(()=>{W.t--;if(W.t>0&&W.t<=3)tone(660,.08);if(W.t<=0){stopTick();beep();if(ph=='rest'){W.ph='ready';const ne=W.d.ex[W.i];if(S.auto!==false&&ne&&ne.t){run(ne.sec,'work');return}}else{W.rec=W.rec||{};(W.rec[W.i]=W.rec[W.i]||[]).push({r:sec});afterSet()}render();return}const el=$('#clock');if(el)el.textContent=fmt(W.t);const rg=$('#ring');if(rg)rg.style.setProperty('--p',W.t/W.tt)},1000)}
+function run(sec,ph){stopTick();W.ph=ph;W.t=sec;W.tt=sec;W.end=Date.now()+sec*1000;render();tick=setInterval(()=>{const nt=Math.max(0,Math.ceil((W.end-Date.now())/1000));if(nt===W.t)return;W.t=nt;if(W.t>0&&W.t<=3)tone(660,.08);if(W.t<=0){stopTick();beep();if(ph=='rest'){W.ph='ready';const ne=W.d.ex[W.i];if(S.auto!==false&&ne&&ne.t){run(ne.sec,'work');return}}else{W.rec=W.rec||{};(W.rec[W.i]=W.rec[W.i]||[]).push({r:sec});afterSet()}render();return}const el=$('#clock');if(el)el.textContent=fmt(W.t);const rg=$('#ring');if(rg)rg.style.setProperty('--p',W.t/W.tt)},250)}
 const fmt=s=>s>=60?Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):String(s);
 function finishW(){stopTick();unwake();W.ph='done';if(W.k>=0)S.done.push({d:today(),k:W.k});if(W.mode=='quick'){S.quick=S.quick||{};S.quick[today()]=1}save();render()}
 function cNext(){const L=W.d.ex.length,R=Math.max(...W.d.ex.map(x=>x.sets));let i=W.i,r=W.set;
@@ -826,7 +830,7 @@ function bindGo(){
   else if(e.t)R.push({r:W.ph=='work'?e.sec-W.t:e.sec});
   afterSet();render()});
  on('skx',()=>{stopTick();if(W.k>=0)setMark(wkStart(0),W.k,W.i,'no');if(W.d.circ){W.sk=W.sk||{};W.sk[W.i]=1;cNext()}else nextEx();render()});
- on('quit',b=>{});{const q=$('#quit');if(q)q.addEventListener('click',()=>{if(!q.dataset.sure){q.dataset.sure=1;q.textContent='Sigurno prekidaš? Dodirni ponovo';q.classList.add('warn');setTimeout(()=>{if(q.isConnected){delete q.dataset.sure;q.textContent='Prekini trening';q.classList.remove('warn')}},3000);return}stopTick();unwake();W=null;setTab('plan')})}
+ {const q=$('#quit');if(q)q.addEventListener('click',()=>{if(!q.dataset.sure){q.dataset.sure=1;q.textContent='Sigurno prekidaš? Dodirni ponovo';q.classList.add('warn');setTimeout(()=>{if(q.isConnected){delete q.dataset.sure;q.textContent='Prekini trening';q.classList.remove('warn')}},3000);return}stopTick();unwake();W=null;setTab('plan')})}
 }
 
 function vNap(){
@@ -835,7 +839,7 @@ function vNap(){
  return '<div class="stats four">'+stat((l?l.kg:'–')+' kg','trenutno')+stat((diff>0?'+':'')+diff.toFixed(1)+' kg','od početka')+stat(b.toFixed(1),'BMI · '+bmiTxt(b))+stat(S.done.length,'treninga ukupno')+'</div>'+vNutri()+vMeas()+
  vHist()+'<form class="card" id="wf"><h3>Upiši današnju težinu</h3><div style="display:flex;gap:10px;margin-top:10px"><input id="nw" type="number" inputmode="decimal" step="0.1" min="30" max="250" placeholder="npr. 64.5" aria-label="Težina u kg" required><button class="btn" style="flex:none">Dodaj</button></div><p class="mute">Najbolje jednom nedeljno, ujutru, istim danom.</p></form>'+
  '<div class="card"><h3>Kretanje težine</h3>'+(ws.length>1?'<div class="fig"><svg id="ch" role="img" aria-label="Grafikon težine"></svg></div>':'<p class="mute">Grafikon se pojavljuje kad upišeš bar dva mjerenja.</p>')+
- '<table>'+ws.slice().reverse().map(x=>'<tr><td>'+new Date(x.d).toLocaleDateString('sr-Latn-ME')+'</td><td class="n">'+x.kg+' kg</td><td class="n"><button class="x" data-del="'+x.d+'" aria-label="Obriši">×</button></td></tr>').join('')+'</table></div>';
+ '<table>'+ws.slice().reverse().map(x=>'<tr><td>'+fmtD(x.d)+x.d.slice(0,4)+'.'+'</td><td class="n">'+x.kg+' kg</td><td class="n"><button class="x" data-del="'+x.d+'" aria-label="Obriši">×</button></td></tr>').join('')+'</table></div>';
 }
 const MS=[['struk','Struk'],['kuk','Kukovi'],['but','Butina'],['ruka','Nadlaktica']];
 function nutri(p){if(!p.sex)return null;const w=+p.w,h=+p.h,a=+p.age;
@@ -902,11 +906,17 @@ function bindLogin(){
 }
 onAuthStateChanged(auth,async u=>{
  authReady=true;
- if(!u){uid=null;S=EMPTY();render();return}
+ if(unsub){unsub();unsub=null}
+ if(!u){uid=null;S=EMPTY();lastSaved='';render();return}
  $('#app').innerHTML='<p class="mute">Učitavam tvoje podatke…</p>';
- try{const snap=await getDoc(doc(fdb,'users',u.uid));S=Object.assign(EMPTY(),snap.exists()?snap.data():{})}
- catch(e){console.log('[trening] load',e);S=EMPTY()}
+ try{const snap=await getDoc(doc(fdb,'users',u.uid));S=Object.assign(EMPTY(),snap.exists()?snap.data():{});lastSaved=snap.exists()?canon(snap.data()):''}
+ catch(e){console.log('[trening] load',e);
+  $('#app').innerHTML='<div class="card"><h3>Ne mogu da učitam tvoje podatke</h3><p class="mute">Provjeri internet pa probaj ponovo. Ništa nije izgubljeno.</p><button class="btn" id="retry">Probaj ponovo</button></div>';
+  $('#retry').addEventListener('click',()=>location.reload());return}
  uid=u.uid;
+ unsub=onSnapshot(doc(fdb,'users',uid),snap=>{
+  if(!snap.exists()||snap.metadata.hasPendingWrites||saveT||W||editDay!==null||tab=='pro')return;
+  const js=canon(snap.data());if(js===lastSaved)return;lastSaved=js;S=Object.assign(EMPTY(),snap.data());render()},e=>console.log('[trening] sync',e));
  if(S.skin){skin=S.skin;try{localStorage.setItem('trening-skin',skin)}catch(e){}applySkin()}
  tab=S.profile?'plan':'pro';render();
 });
