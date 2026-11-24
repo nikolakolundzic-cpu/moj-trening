@@ -233,9 +233,27 @@ const eqSet=p=>p.loc=='ter'?['0','b','t','r','p','k']:p.loc=='buc'?['0','b']:['0
 const DAILY=[['Ponedeljak','dn'],['Utorak','dg'],['Srijeda','dk'],['Četvrtak','df'],['Petak','dn'],['Subota','dg'],['Nedelja','dl']];
 Object.assign(T,{dn:{n:'Noge i zadnjica',s:['noge','noge','core','noge','kar'],x:'noge'},dg:{n:'Gornji dio tijela',s:['gur','vuc','gur','vuc','core'],x:'core'},dk:{n:'Kardio i stomak',s:['kar','core','kar','noge','core'],x:'kar'},df:{n:'Cijelo tijelo',s:['noge','gur','vuc','core','kar'],x:'noge'},dl:{n:'Lagani dan',s:['core','vuc','noge','core','core'],x:'vuc'}});
 const isDaily=p=>p&&p.mode=='dnev';
-const daysOf=p=>isDaily(p)?DAILY:DAYS[p.days];
-const ckey=p=>isDaily(p)?'d'+(p.min||20):String(p.days);
-const normP=p=>{p=JSON.parse(JSON.stringify(p));if(p.loc=='buc'){p.loc='kuca';p.eq=['b']}p.eq=p.eq||[];p.mode=p.mode||'klas';p.min=p.min||20;return p};
+const daysOf=p=>isDaily(p)?(p.style=='reps'?DAILY.map((x,i)=>[x[0],'r'+i]):DAILY):DAYS[p.days];
+const ckey=p=>isDaily(p)?'d'+(p.min||20)+(p.style=='reps'?'r':''):String(p.days);
+const normP=p=>{p=JSON.parse(JSON.stringify(p));if(p.loc=='buc'){p.loc='kuca';p.eq=['b']}p.eq=p.eq||[];p.mode=p.mode||'klas';p.min=p.min||20;p.style=p.style||'mix';return p};
+const CH={PU:['Sklek','Sklek na koljenima','Sklek uz zid'],JS:['Skok iz čučnja','Čučanj','Čučanj do stolice'],JL:['Skok iz iskoraka','Iskorak unazad','Glute most'],
+ FL:['Makaze (flutter kicks)','Mrtva buba','Bird-dog'],LR:['Podizanje nogu ležeći','Makaze (flutter kicks)','Mrtva buba'],PL:['Plank na podlakticama','Bird-dog','Mrtva buba'],
+ MC:['Planinar (mountain climbers)','Marširanje u mjestu'],BU:['Burpee','Planinar (mountain climbers)','Jumping jacks','Marširanje u mjestu'],JJ:['Jumping jacks','Boks u mjestu','Marširanje u mjestu'],
+ KB:['Zamah kettlebellom','Glute most'],KG:['Goblet čučanj sa kettlebellom','Čučanj','Čučanj do stolice'],PUL:['Zgibovi','Negativni zgibovi','Superman','Y-T podizanje na stomaku'],
+ HK:['Podizanje koljena u visu','Podizanje nogu ležeći','Makaze (flutter kicks)'],GB:['Glute most','Podizanje na prste'],BD:['Bird-dog','Y-T podizanje na stomaku'],YT:['Y-T podizanje na stomaku','Superman']};
+const REPSD=[
+ {n:'Sklekovi i skokovi',c:['PU','JS','FL','JL','PL'],x:'MC'},
+ {n:'Snaga i stomak',c:['KB','PUL','PU','LR','MC'],x:'PL'},
+ {n:'Noge i sklekovi',c:['JS','PU','LR','JL','JJ'],x:'FL'},
+ {n:'Kardio i stomak',c:['BU','FL','PU','MC','PL'],x:'LR'},
+ {n:'Cijelo tijelo',c:['KG','PUL','PU','HK','JS'],x:'JJ'},
+ {n:'Kondicija',c:['BU','PU','JS','LR','MC'],x:'PL'},
+ {n:'Lagani dan',c:['PL','LR','GB','BD','FL'],x:'YT'}];
+REPSD.forEach((d,i)=>{T['r'+i]={n:d.n,s:[],x:''}});
+const isReps=p=>isDaily(p)&&p.style=='reps';
+function pickChain(p,ch,used){const ok=allowedEx(Object.assign({},p,{lvl:String(Math.min(3,+p.lvl+1))}));for(const n of CH[ch]){const e=EX.find(x=>x.n==n);if(e&&ok(e)&&!used.has(n)){used.add(n);return e}}
+ const g=EX.find(x=>x.n==CH[ch][0]).g,pl=poolFor(p,g),e=pl.find(x=>!used.has(x.n))||pl[0];used.add(e.n);return e}
+
 
 
 const bmi=p=>p.w/((p.h/100)**2);
@@ -255,9 +273,10 @@ function build(p,raw,nb){
  return daysOf(p).map(([dn,k],di)=>{
   const used=new Set(),slots=T[k].s.slice();
   if(D){if(p.min==30)slots.push(T[k].x)}else if((p.goal=='mrs'||p.goal=='kon')&&k!='kar')slots.push('kar');
-  const rec=slots.map(g=>{const c=poolFor(p,g);let i=cnt[g]||0,e,tries=0;
+  const rec=isReps(p)?REPSD[di].c.concat(p.min==30?[REPSD[di].x]:[]).map(ch=>pickChain(p,ch,used)):slots.map(g=>{const c=poolFor(p,g);let i=cnt[g]||0,e,tries=0;
    do{e=c[i%c.length];i++;tries++}while(used.has(e.n)&&tries<c.length);
    cnt[g]=i;used.add(e.n);return e});
+  if(isReps(p))rec.forEach(e=>slots.push(e.g));
   const cu=!raw&&S.custom&&S.custom[ckey(p)]&&S.custom[ckey(p)][di];
   const list=cu?cu.map(n=>EX.find(e=>e.n==n)).filter(Boolean):rec;
   return {dn,name:T[k].n,ex:(list.length?list:rec).map(dz),rec:rec.map(e=>e.n),slots,custom:!!(cu&&list.length),rest:D?(p.min==30?15:20):G.rest,circ:D};
@@ -312,7 +331,7 @@ function vPro(){
  '<label>Nivo</label>'+chips('lvl',Object.entries(LVL))+
  '<label>Način treninga</label>'+chips('mode',[['klas','Klasični, 2–5 dana nedeljno'],['dnev','Dnevni, svaki dan kratko']])+
  '<div id="f_days"'+(p.mode=='dnev'?' hidden':'')+'><label>Dana nedeljno</label>'+chips('days',[[2,'2'],[3,'3'],[4,'4'],[5,'5']])+'</div>'+
- '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'><label>Koliko traje dnevni trening</label>'+chips('min',[[20,'20 min'],[30,'30 min']])+'<p class="mute" style="margin:6px 0 0">Svaki dan drugi dio tijela, vježbe na vrijeme sa kratkim pauzama. Nedelja je lakši dan.</p></div>'+
+ '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'><label>Koliko traje dnevni trening</label>'+chips('min',[[20,'20 min'],[30,'30 min']])+'<p class="mute" style="margin:6px 0 0">Vježbe na vrijeme, kružno, sa kratkim pauzama. Nedelja je lakši dan.</p><label>Stil dnevnog treninga</label>'+chips('style',[['mix','Mješovito, svaki dan drugi dio tijela'],['reps','Sklekovi, skokovi i stomak (kao dailyrepsguy)']])+'<p class="mute" style="margin:6px 0 0">Drugi stil je pravljen po uzoru na trening koji dailyrepsguy opisuje javno: sopstvena težina, sklekovi i skokovi svaki dan, uz kettlebell i šipku ako ih imaš. Nije njegov zvanični program.</p></div>'+
  '<label>Gdje treniraš</label>'+chips('loc',[['kuca','Kod kuće'],['ter','Teretana']])+
  '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bučice'],['k','Kettlebell'],['r','Elastična traka'],['p','Šipka za zgibove']],1)+'</div>'+
  '<label>Problemi (izbaciću vježbe koje ih opterećuju)</label>'+chips('prob',[['koljena','Koljena'],['leđa','Leđa'],['ramena','Ramena']],1)+
