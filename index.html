@@ -527,7 +527,7 @@ function vWeek(sm){
  return '<div class="card"><h2 style="margin:0">'+(sun?'Nedeljni izvještaj':'Ova nedelja')+'</h2><p class="mute" style="margin:2px 0 0">'+range(0)+' · '+week()+'. nedelja programa</p>'+
  '<div class="wk2"><div><b class="pct" style="color:var(--ok)">'+sm.okp+'%</b><span>odrađeno</span></div><div><b class="pct" style="color:var(--no)">'+sm.nop+'%</b><span>'+(sun?'nije odrađeno':'propušteno do sada')+'</span></div></div>'+
  '<div class="sbar"><i style="width:'+sm.okp+'%;background:var(--ok)"></i><i style="width:'+sm.nop+'%;background:var(--no)"></i></div>'+
- '<p class="mute" style="margin-bottom:0">Odrađeno '+sm.ok+' od '+nEx(sm.total)+(sm.miss?', propušteno '+sm.miss:'')+(sm.open?', preostalo '+sm.open:'')+'.</p>'+
+ (S.began?'':'<p class="mute" style="margin:10px 0 0">Program se računa od dana kad odradiš ili označiš prvi trening. Do tada se ništa ne broji kao propušteno.</p>')+'<p class="mute" style="margin-bottom:0">Odrađeno '+sm.ok+' od '+nEx(sm.total)+(sm.miss?', propušteno '+sm.miss:'')+(sm.open?', preostalo '+sm.open:'')+'.</p>'+
  (sun&&sm.miss?'<p style="margin-bottom:0">Propuštene vježbe se od sjutra pojavljuju kao nadoknada.</p>':'')+'</div>';
 }
 function makeList(){
@@ -806,7 +806,11 @@ onAuthStateChanged(auth,async u=>{
  if(S.skin){skin=S.skin;try{localStorage.setItem('trening-skin',skin)}catch(e){}applySkin()}
  tab=S.profile?'plan':'pro';render();
 });
+function firstAct(){let best=null;const plan=S.profile?build(S.profile,0,1):[];
+ for(const wk in (S.marks||{})){const w=S.marks[wk];for(const d in w){if(!w[d]||!Object.keys(w[d]).length)continue;const pd=plan[+d];const dd=d=='n'||!pd?wk:(dateOf(wk,+d,pd.dn)||addD(wk,DIDX[pd.dn]));if(!best||dd<best)best=dd}}
+ for(const x of S.done||[])if(!best||x.d<best)best=x.d;for(const q in S.quick||{})if(!best||q<best)best=q;return best}
 function render(){
+ if(S.profile&&!S.began){const f=firstAct(),td=today();if(f){S.began=1;S.start=f>td?td:f;save()}else if(S.start!==td){S.start=td;save()}}
  if(S.log||S.custom){const fx=n=>String(n).replace(/u\u0107ic/g,'učic').replace('Visenje na \u0161ipci','Visenje na vratilu');
   if(S.log)for(const k of Object.keys(S.log)){const n=fx(k);if(n!==k){S.log[n]=(S.log[n]||[]).concat(S.log[k]);delete S.log[k]}}
   if(S.custom)for(const c of Object.values(S.custom))for(const d in c)if(Array.isArray(c[d]))c[d]=c[d].map(fx)}
