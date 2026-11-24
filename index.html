@@ -136,6 +136,55 @@ ul.nut{margin:0 0 10px;padding-left:20px}ul.nut li{margin:2px 0}
 .makeup{border:2px dashed var(--red)}
 .note{font-size:14px;color:var(--mute);margin-top:20px}
 @media(prefers-reduced-motion:no-preference){.live .big{transition:color .3s}.bar div{transition:width .4s}}
+
+/* ---- uljepšavanje ---- */
+:root{--hdr2:#f2852f;--r:18px;--shadow:light-dark(0 1px 2px rgb(60 30 10/.05),0 1px 2px rgb(0 0 0/.3)),light-dark(0 10px 28px -12px rgb(60 30 10/.18),0 10px 28px -12px rgb(0 0 0/.6))}
+:root[data-skin=f]{--hdr2:#f58bb5}
+body{-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+.top{background:linear-gradient(135deg,var(--hdr) 0%,var(--hdr2) 100%);position:relative;overflow:hidden;padding-top:26px}
+.top::before,.top::after{content:"";position:absolute;border-radius:50%;background:rgb(255 255 255/.12);pointer-events:none}
+.top::before{width:260px;height:260px;right:-70px;top:-110px}
+.top::after{width:140px;height:140px;right:90px;top:40px;background:rgb(255 255 255/.07)}
+.top>div{position:relative;z-index:1}
+.top h1{text-shadow:0 2px 12px rgb(0 0 0/.12)}
+nav{gap:2px}
+nav button{border-radius:12px 12px 0 0;transition:background .15s,opacity .15s}
+nav button.on{font-weight:700;box-shadow:0 -4px 12px -6px rgb(0 0 0/.25)}
+main{padding-top:22px}
+.card{border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--line);padding:18px 18px}
+.btn{border-radius:14px;background:linear-gradient(135deg,var(--red),var(--hdr2));box-shadow:0 8px 18px -8px var(--red);transition:transform .12s,box-shadow .12s,filter .12s}
+.btn:hover{filter:brightness(1.05)}.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--card);box-shadow:none;border:1.5px solid var(--line)}
+.btn.blue{background:linear-gradient(135deg,var(--blue),color-mix(in srgb,var(--blue) 70%,#fff));box-shadow:0 8px 18px -8px var(--blue)}
+.chip{transition:background .15s,transform .1s}.chip:active{transform:scale(.96)}
+.chip.on{background:linear-gradient(135deg,var(--red),var(--hdr2));border-color:transparent;box-shadow:0 6px 14px -8px var(--red)}
+input,select,textarea{border-radius:12px!important;background:var(--card)!important;border:1.5px solid var(--line)!important}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.sbar{height:12px;border-radius:99px}.sbar i:first-child{border-radius:99px 0 0 99px}
+.dayc{position:relative}
+.dayc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--line)}
+.dayc.s-ok::before{background:var(--ok)}.dayc.s-part::before{background:color-mix(in srgb,var(--ok) 55%,var(--line))}.dayc.s-miss::before{background:var(--no)}.dayc.today::before{background:var(--red)}
+.dayc.today{border:1px solid color-mix(in srgb,var(--red) 55%,var(--line));box-shadow:var(--shadow),0 0 0 3px color-mix(in srgb,var(--red) 16%,transparent)}
+.card.dayc{padding:0}.dayh{padding:14px 14px 14px 20px}.dayb{padding:0 16px 16px 20px}
+.tag.ok{background:var(--ok);color:#fff}
+.dayh:active{background:color-mix(in srgb,var(--line) 40%,transparent)}
+ol.ex li{transition:background .2s}
+.thumb{border-radius:12px}
+.tag{font-size:13.5px;padding:4px 11px}
+.nextc{background:linear-gradient(135deg,color-mix(in srgb,var(--red) 12%,var(--card)),var(--card) 70%)}
+.cd{border-radius:12px;transition:transform .1s}.cd:active{transform:scale(.94)}
+.cd.today{box-shadow:inset 0 0 0 2px var(--ink)}
+.cd.plan.today{box-shadow:inset 0 0 0 2px var(--red),0 0 0 2px var(--ink)}
+.ring{--rc:var(--red);width:min(68vw,250px);aspect-ratio:1;margin:10px auto 6px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--rc) calc(var(--p,1)*360deg),var(--line) 0);transition:--p .9s linear}
+.live.resting .ring{--rc:var(--blue)}
+.ring>div{width:calc(100% - 26px);aspect-ratio:1;border-radius:50%;background:var(--card);display:grid;place-items:center;align-content:center}
+.ring .big{font-size:clamp(56px,18vw,96px);line-height:1}
+.ring .lbl{font-size:14px;color:var(--mute);margin-top:2px}
+.live h2{margin-top:4px}
+.fade>*{animation:fin .28s ease both}.fade>*:nth-child(2){animation-delay:.03s}.fade>*:nth-child(3){animation-delay:.06s}.fade>*:nth-child(4){animation-delay:.09s}
+.btn.warn{border-color:var(--no);color:var(--no)}
+@keyframes fin{from{opacity:0;transform:translateY(8px)}}
+@media(prefers-reduced-motion:reduce){.fade>*{animation:none}}
 </style>
 </head>
 <body>
@@ -298,7 +347,7 @@ function build(p,raw,nb){
   if(D){if(p.min==30)slots.push(T[k].x)}else if((p.goal=='mrs'||p.goal=='kon'||p.goal=='def')&&k!='kar')slots.push('kar');
   const rec=isReps(p)?REPSD[di].c.concat(p.min==30?[REPSD[di].x]:[]).map(ch=>pickChain(p,ch,used)):slots.map(g=>{const c=poolFor(p,g);let i=cnt[g]||0,e,tries=0;
    do{e=c[i%c.length];i++;tries++}while(used.has(e.n)&&tries<c.length);
-   cnt[g]=i;used.add(e.n);return e});
+   cnt[g]=i;if(used.has(e.n)){const ok=allowedEx(p),alt=[g,'core','noge','vuc','gur','kar'].map(x=>EX.filter(z=>z.g==x&&ok(z)&&!used.has(z.n))).find(a=>a.length);if(alt)e=alt[0]}used.add(e.n);return e});
   if(isReps(p))rec.forEach(e=>slots.push(e.g));
   const cu=!raw&&S.custom&&S.custom[ckey(p)]&&S.custom[ckey(p)][di];
   const list=cu?cu.map(n=>EX.find(e=>e.n==n)).filter(Boolean):rec;
@@ -345,7 +394,7 @@ function bindRemind(){
 function vPro(){
  const p=normP(S.profile||{name:'',w:'',h:'',age:'',goal:'zat',lvl:'1',loc:'kuca',days:3,prob:[]});
  const chips=(k,opts,multi)=>'<div class="chips" data-k="'+k+'"'+(multi?' data-m="1"':'')+'>'+opts.map(([v,l])=>'<button type="button" class="chip'+((multi?p[k].includes(v):String(p[k])==String(v))?' on':'')+'" data-v="'+v+'">'+l+'</button>').join('')+'</div>';
- return '<div class="card"><h2>Podešavanja</h2><label>Tema aplikacije</label><div class="chips" id="skin" role="group" aria-label="Tema"><button type="button" class="chip" data-s="m">Muška</button><button type="button" class="chip" data-s="f">Ženska (roza)</button></div><label>Uputstva za vježbe</label><div class="chips" id="hint"><button type="button" class="chip'+(S.hideHow?'':' on')+'" data-h="0">Prikaži</button><button type="button" class="chip'+(S.hideHow?' on':'')+'" data-h="1">Sakrij</button></div><p class="mute" style="margin-bottom:0">Sakrij kad naučiš vježbe: nestaju animacije, opisi i linkovi za video. Kod biranja vježbi animacije ostaju.</p></div>'+(uid?vRemind():'')+(uid?'<div class="card"><h3>Nalog</h3><p class="mute" id="acc"></p><button class="btn ghost" id="lo" type="button">Odjavi se</button></div>':'')+'<form class="card" id="f"><h2>'+(S.profile?'Tvoji podaci':'Hajde da počnemo')+'</h2><p class="mute">Na osnovu ovoga pravim nedeljni plan. Sve se čuva na tvom nalogu.</p>'+
+ return '<div class="card"><h2>Podešavanja</h2><label>Tema aplikacije</label><div class="chips" id="skin" role="group" aria-label="Tema"><button type="button" class="chip" data-s="m">Muška</button><button type="button" class="chip" data-s="f">Ženska (roza)</button></div><label>Tajmer</label><div class="chips" id="autoc"><button type="button" class="chip'+(S.auto===false?'':' on')+'" data-a="1">Sam kreće poslije odmora</button><button type="button" class="chip'+(S.auto===false?' on':'')+'" data-a="0">Čeka moj klik</button></div><p class="mute" style="margin:6px 0 0">Kad je sledeća vježba na vrijeme, tajmer može da krene sam, pa ne moraš dirati telefon. Zadnje 3 sekunde se čuje kratak zvuk, a ekran se ne gasi dok traje trening.</p><label>Uputstva za vježbe</label><div class="chips" id="hint"><button type="button" class="chip'+(S.hideHow?'':' on')+'" data-h="0">Prikaži</button><button type="button" class="chip'+(S.hideHow?' on':'')+'" data-h="1">Sakrij</button></div><p class="mute" style="margin-bottom:0">Sakrij kad naučiš vježbe: nestaju animacije, opisi i linkovi za video. Kod biranja vježbi animacije ostaju.</p></div>'+(uid?vRemind():'')+(uid?'<div class="card"><h3>Nalog</h3><p class="mute" id="acc"></p><button class="btn ghost" id="lo" type="button">Odjavi se</button></div>':'')+'<form class="card" id="f"><h2>'+(S.profile?'Tvoji podaci':'Hajde da počnemo')+'</h2><p class="mute">Na osnovu ovoga pravim nedeljni plan. Sve se čuva na tvom nalogu.</p>'+
  '<label for="nm">Ime (nije obavezno)</label><input id="nm" value="'+esc(p.name)+'" autocomplete="given-name">'+
  '<div class="row"><div><label for="w">Težina (kg)</label><input id="w" type="number" inputmode="decimal" min="30" max="250" step="0.1" required value="'+esc(p.w)+'"></div>'+
  '<div><label for="h">Visina (cm)</label><input id="h" type="number" inputmode="numeric" min="120" max="220" required value="'+esc(p.h)+'"></div>'+
@@ -368,6 +417,7 @@ function bindPro(){
  const draft=normP(S.profile||{goal:'zat',lvl:'1',loc:'kuca',days:3,prob:[]});
  const vis=()=>{$('#f_days').hidden=draft.mode=='dnev';$('#f_min').hidden=draft.mode!='dnev';$('#f_eq').hidden=draft.loc=='ter'};
  bindSkin();applySkin();
+ {const a=$('#autoc');if(a)a.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;S.auto=b.dataset.a=='1';if(S.auto)delete S.auto;save();render()})}
  {const h=$('#hint');if(h)h.addEventListener('click',e=>{const b=e.target.closest('[data-h]');if(!b)return;S.hideHow=b.dataset.h=='1';if(!S.hideHow)delete S.hideHow;save();render()})}
  
  bindRemind();
@@ -685,7 +735,7 @@ function nextTr(){const td=today();let best=null;
  return best}
 function quickDay(){const n=nextTr(),plan=build(S.profile),d=n&&n.off==0?n.d:plan[0];
  return {name:'Kratki trening',rest:20,ex:d.ex.slice(0,4).map(e=>Object.assign({},e,{t:1,sec:40,sets:2}))}}
-function startSpecial(mode){const d=mode=='str'?strDay():quickDay();W={k:-1,mode,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go')}
+function startSpecial(mode){wake();const d=mode=='str'?strDay():quickDay();W={k:-1,mode,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go')}
 let openDay;
 const pl=(n,a,b,c)=>{const t=n%10,h=n%100;return n+' '+(t==1&&h!=11?a:t>=2&&t<=4&&(h<12||h>14)?b:c)};
 const nEx=n=>pl(n,'vježba','vježbe','vježbi');
@@ -704,8 +754,9 @@ function vPlan(){
   const dt=dateOf(wk,i,d.dn),o=d.ex.filter((_,j)=>dm[j]=='ok').length,x=d.ex.filter((_,j)=>dm[j]=='no').length;
   const st=S.start&&dt&&dt<S.start&&!o?'<span class="tag">Prije početka</span>':all?'<span class="tag ok">✓ Odrađeno</span>':o?'<span class="tag">'+o+'/'+d.ex.length+'</span>':dt&&dt<td?'<span class="tag no">Propušteno</span>':dt==td?'<span class="tag today">Danas</span>':x?'<span class="tag">✗ '+x+'</span>':'';
   const head='<button class="dayh" data-open="'+i+'" aria-expanded="'+op+'"><span class="dl"><b>'+d.dn+'</b> <span class="mute">'+(dt?(dt==addD(wk,DIDX[d.dn])?fmtD(dt):'→ '+wdOf(dt).slice(0,3).toLowerCase()+' '+fmtD(dt)):'nije raspoređeno')+'</span><br><span class="mute">'+(d.custom?'Tvoj izbor':d.name)+' · '+nEx(d.ex.length)+'</span></span>'+st+'<span class="chev" aria-hidden="true">›</span></button>';
-  if(!op)return '<div class="card dayc'+(dt==td?' today':'')+'">'+head+'</div>';
-  return '<div class="card dayc open'+(dt==td?' today':'')+'" id="day'+i+'">'+head+'<div class="dayb"><p class="mute" style="margin:0">'+(d.circ?'Kružno: '+pl(d.ex[0].sets,'krug','kruga','krugova')+', pauza '+d.rest+' s između vježbi.':'Odmor između serija: '+d.rest+' s.')+' Označi ✓ ili ✗ za svaku vježbu.</p><ol class="ex">'+
+  const sc=all?' s-ok':o?' s-part':dt&&dt<td&&!(S.start&&dt<S.start)?' s-miss':'';
+  if(!op)return '<div class="card dayc'+sc+(dt==td?' today':'')+'">'+head+'</div>';
+  return '<div class="card dayc open'+sc+(dt==td?' today':'')+'" id="day'+i+'">'+head+'<div class="dayb"><p class="mute" style="margin:0">'+(d.circ?'Kružno: '+pl(d.ex[0].sets,'krug','kruga','krugova')+', pauza '+d.rest+' s između vježbi.':'Odmor između serija: '+d.rest+' s.')+' Označi ✓ ili ✗ za svaku vježbu.</p><ol class="ex">'+
   d.ex.slice(0,bn).map((e,j)=>exLi(e,wk+'|'+i+'|'+j,dm[j])).join('')+(bn<d.ex.length?'</ol><h3 class="gh">Nadoknada iz prošle nedelje</h3><ol class="ex">'+d.ex.slice(bn).map((e,j)=>exLi(e,wk+'|'+i+'|'+(bn+j),dm[bn+j])).join(''):'')+
   '</ol><div class="acts" style="justify-content:flex-start;margin-top:0"><button class="btn" data-go="'+i+'">Počni trening</button><button class="btn ghost" data-edit="'+i+'">Izaberi vježbe</button></div></div></div>'}).join('')+
  '<div class="card"><h3>Nemaš vremena ili hoćeš više?</h3><div class="acts" style="justify-content:flex-start;margin-top:10px"><button class="btn ghost" id="quick">Kratki trening · 10 min</button><button class="btn ghost" id="strb">Istezanje · 3 min</button></div><p class="mute" style="margin-bottom:0">Kratki trening se u kalendaru računa kao djelimično odrađen dan. Istezanje radi poslije svakog treninga.</p></div>'+
@@ -730,12 +781,16 @@ function vHist(){
  return rows.length?'<div class="card"><h3>Prethodne nedelje</h3><table>'+rows.join('')+'</table></div>':'';
 }
 let actx=null;
-function beep(){try{actx=actx||new AudioContext();const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.frequency.value=880;g.gain.value=.15;o.start();o.stop(actx.currentTime+.25)}catch(e){}try{navigator.vibrate&&navigator.vibrate(300)}catch(e){}}
-function startW(k){const d=withMake(build(S.profile))[k];W={k,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go')}
+function tone(f,d){try{actx=actx||new AudioContext();const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.frequency.value=f;g.gain.value=.15;o.start();o.stop(actx.currentTime+d)}catch(e){}}
+function beep(){tone(880,.3);try{navigator.vibrate&&navigator.vibrate(300)}catch(e){}}
+let wl=null;async function wake(){try{if('wakeLock' in navigator&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}catch(e){}}
+function unwake(){try{wl&&wl.release()}catch(e){}wl=null}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&W&&W.ph!='done')wake()});
+function startW(k){wake();const d=withMake(build(S.profile))[k];W={k,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go')}
 function stopTick(){clearInterval(tick);tick=null}
-function run(sec,ph){stopTick();W.ph=ph;W.t=sec;render();tick=setInterval(()=>{W.t--;if(W.t<=0){stopTick();beep();if(ph=='rest')W.ph='ready';else{W.rec=W.rec||{};(W.rec[W.i]=W.rec[W.i]||[]).push({r:sec});afterSet()}render();return}const el=$('#clock');if(el)el.textContent=fmt(W.t)},1000)}
+function run(sec,ph){stopTick();W.ph=ph;W.t=sec;W.tt=sec;render();tick=setInterval(()=>{W.t--;if(W.t>0&&W.t<=3)tone(660,.08);if(W.t<=0){stopTick();beep();if(ph=='rest'){W.ph='ready';const ne=W.d.ex[W.i];if(S.auto!==false&&ne&&ne.t){run(ne.sec,'work');return}}else{W.rec=W.rec||{};(W.rec[W.i]=W.rec[W.i]||[]).push({r:sec});afterSet()}render();return}const el=$('#clock');if(el)el.textContent=fmt(W.t);const rg=$('#ring');if(rg)rg.style.setProperty('--p',W.t/W.tt)},1000)}
 const fmt=s=>s>=60?Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):String(s);
-function finishW(){stopTick();W.ph='done';if(W.k>=0)S.done.push({d:today(),k:W.k});if(W.mode=='quick'){S.quick=S.quick||{};S.quick[today()]=1}save();render()}
+function finishW(){stopTick();unwake();W.ph='done';if(W.k>=0)S.done.push({d:today(),k:W.k});if(W.mode=='quick'){S.quick=S.quick||{};S.quick[today()]=1}save();render()}
 function cNext(){const L=W.d.ex.length,R=Math.max(...W.d.ex.map(x=>x.sets));let i=W.i,r=W.set;
  for(let g=0;g<=L*R;g++){i++;if(i>=L){i=0;r++}if(r>R)return finishW();if(!(W.sk||{})[i]&&r<=W.d.ex[i].sets){const nr=r!=W.set;W.i=i;W.set=r;W.nr=nr;return run(nr?60:W.d.rest,'rest')}}
  finishW()}
@@ -755,9 +810,9 @@ function vGo(){
  '<div class="acts">'+(W.mode=='str'?'':'<button class="btn blue" id="strgo">Istezanje · 3 min</button>')+'<button class="btn" id="toplan">Nazad na plan</button></div></div>';
  const next=e;
  let mid;
- if(W.ph=='rest')mid='<p class="mute">'+(d.circ&&W.nr?'Odmor prije '+W.set+'. kruga':'Odmor')+'</p><div class="big" id="clock">'+fmt(W.t)+'</div><p>Sledeće: <b>'+next.n+'</b> · '+dose(next)+'</p><div class="acts"><button class="btn blue" id="skip">Preskoči odmor</button></div>';
- else if(W.ph=='work')mid='<div class="big" id="clock">'+fmt(W.t)+'</div><div class="acts"><button class="btn ghost" id="fin">Završi ranije</button></div>';
- else mid='<div class="big">'+(e.t?e.sec+' s':e.reps)+'</div><p class="mute" style="margin-top:0">'+(e.t?'sekundi':'ponavljanja')+'</p>'+(sugg(e)?'<p class="sug">'+sugg(e)+'</p>':'')+
+ if(W.ph=='rest')mid='<div class="ring" id="ring" style="--p:'+(W.t/(W.tt||1))+'"><div><div class="big" id="clock">'+fmt(W.t)+'</div><div class="lbl">'+(d.circ&&W.nr?'odmor prije '+W.set+'. kruga':'odmor')+'</div></div></div><p>Sledeće: <b>'+next.n+'</b> · '+dose(next)+'</p><div class="acts"><button class="btn blue" id="skip">Preskoči odmor</button></div>';
+ else if(W.ph=='work')mid='<div class="ring" id="ring" style="--p:'+(W.t/(W.tt||1))+'"><div><div class="big" id="clock">'+fmt(W.t)+'</div><div class="lbl">radi</div></div></div><div class="acts"><button class="btn ghost" id="fin">Završi ranije</button></div>';
+ else mid='<div class="ring" style="--p:1"><div><div class="big">'+(e.t?e.sec:e.reps)+'</div><div class="lbl">'+(e.t?'sekundi':'ponavljanja')+'</div></div></div>'+(sugg(e)?'<p class="sug">'+sugg(e)+'</p>':'')+
  (e.t||W.mode?'':'<div class="logrow"><label>Ponavljanja<input id="lr" type="number" inputmode="numeric" min="0" max="200" value="'+e.reps+'"></label>'+(isWt(e)?'<label>Težina (kg)<input id="lk" type="number" inputmode="decimal" min="0" max="300" step="0.5" value="'+(((W.rec||{})[W.i]||[]).slice(-1)[0]||{kg:sugKg(e)}).kg+'"></label>':'')+'</div>')+'<div class="acts">'+(e.t?'<button class="btn" id="tmr">Pokreni '+e.sec+' s</button>':'<button class="btn" id="fin">Serija gotova</button>')+'<button class="btn ghost" id="skx">Preskoči vježbu</button></div>';
  return '<div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">'+(d.circ?'Krug':'Serija')+' '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
  '<div class="card howto"><h3>Kako se radi</h3><p>'+e.o+'</p><p><strong>Savjet:</strong> '+e.s+'</p><p>'+ytLink(e.n)+'</p></div><button class="btn ghost" id="quit">Prekini trening</button>';
@@ -771,7 +826,7 @@ function bindGo(){
   else if(e.t)R.push({r:W.ph=='work'?e.sec-W.t:e.sec});
   afterSet();render()});
  on('skx',()=>{stopTick();if(W.k>=0)setMark(wkStart(0),W.k,W.i,'no');if(W.d.circ){W.sk=W.sk||{};W.sk[W.i]=1;cNext()}else nextEx();render()});
- on('quit',()=>{stopTick();W=null;setTab('plan')});
+ on('quit',b=>{});{const q=$('#quit');if(q)q.addEventListener('click',()=>{if(!q.dataset.sure){q.dataset.sure=1;q.textContent='Sigurno prekidaš? Dodirni ponovo';q.classList.add('warn');setTimeout(()=>{if(q.isConnected){delete q.dataset.sure;q.textContent='Prekini trening';q.classList.remove('warn')}},3000);return}stopTick();unwake();W=null;setTab('plan')})}
 }
 
 function vNap(){
@@ -858,6 +913,7 @@ onAuthStateChanged(auth,async u=>{
 function firstAct(){let best=null;const plan=S.profile?build(S.profile,0,1):[];
  for(const wk in (S.marks||{})){const w=S.marks[wk];for(const d in w){if(!w[d]||!Object.keys(w[d]).length)continue;const pd=plan[+d];const dd=d=='n'||!pd?wk:(dateOf(wk,+d,pd.dn)||addD(wk,DIDX[pd.dn]));if(!best||dd<best)best=dd}}
  for(const x of S.done||[])if(!best||x.d<best)best=x.d;for(const q in S.quick||{})if(!best||q<best)best=q;return best}
+let lastTab=null;
 function render(){
  if(S.profile&&!S.began){const f=firstAct(),td=today();if(f){S.began=1;S.start=f>td?td:f;save()}else if(S.start!==td){S.start=td;save()}}
  if(S.log||S.custom){const fx=n=>String(n).replace(/u\u0107ic/g,'učic').replace('Visenje na \u0161ipci','Visenje na vratilu');
@@ -871,6 +927,7 @@ function render(){
  header();
  const V={plan:[vPlan,bindPlan],cal:[vCal,bindCal],go:[vGo,bindGo],nap:[vNap,bindNap],pro:[vPro,bindPro]}[tab];
  $('#app').innerHTML=V[0]();
+ if(lastTab!==tab){const a=$('#app');a.classList.remove('fade');void a.offsetWidth;a.classList.add('fade');lastTab=tab}
  if(!S.profile||tab=='pro')bindPro();else V[1]();
 }
 render();
