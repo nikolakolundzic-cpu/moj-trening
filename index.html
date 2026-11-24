@@ -126,8 +126,12 @@ th{text-align:left;font-size:14px;color:var(--mute);font-weight:600;padding:6px 
 .dayb{padding:0 16px 16px}
 .dayc.today{border:2px solid var(--red)}
 .tag.no{background:var(--no);color:#fff}.tag.today{background:var(--red);color:#fff}
-.nextc .nxrow{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:2px}
-.nextc .pct{color:var(--red)}
+.nextc{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 12px;padding:12px 16px}
+.nextc>.mute{grid-column:1;font-size:13px}
+.nextc .nxrow{grid-column:1;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.nextc .pct{color:var(--red);font-size:28px}
+.nextc p{grid-column:1;margin:0!important;font-size:15px}
+.nextc .btn{grid-column:2;grid-row:1/4;min-height:44px;padding:8px 14px;font-size:16px}
 .makeup{border:2px dashed var(--red)}
 .note{font-size:14px;color:var(--mute);margin-top:20px}
 @media(prefers-reduced-motion:no-preference){.live .big{transition:color .3s}.bar div{transition:width .4s}}
@@ -659,7 +663,7 @@ function vPlan(){
  const mkAll=plan.reduce((a,d,i)=>a.concat(d.ex.map((e,j)=>e.mk?((m[i]||{})[j]=='ok'):null).filter(x=>x!==null)),[]);
  const nxBig=nx?(nx.dt==td?'Danas':nx.dt==addD(td,1)?'Sjutra':wdOf(nx.dt)):'';
  return (nx?'<div class="card nextc"><span class="mute">Sledeći trening</span><div class="nxrow"><b class="pct">'+nxBig+'</b><span class="mute">'+(nxBig==wdOf(nx.dt)?'':wdOf(nx.dt).toLowerCase()+', ')+fmtD(nx.dt)+'</span></div><p style="margin:2px 0 12px"><b>'+nx.d.name+'</b> · '+nEx(nx.d.ex.length)+'</p>'+
-  (nx.dt==td&&nx.off==0?'<button class="btn" data-go="'+nx.i+'">Počni trening</button>':nx.off==0?'<button class="btn ghost" data-open-go="'+nx.i+'">Pogledaj vježbe</button>':'')+'</div>':'')+
+  (nx.dt==td&&nx.off==0?'<button class="btn" data-go="'+nx.i+'">Počni</button>':nx.off==0?'<button class="btn ghost" data-open-go="'+nx.i+'">Vježbe</button>':'')+'</div>':'')+
  vWeek(sm)+
  (mkAll.length?'<p class="mute">Nadoknada iz prošle nedelje je ubačena u treninge ispod: odrađeno '+mkAll.filter(Boolean).length+' od '+mkAll.length+'.</p>':'')+
  (openDay===undefined?(openDay=nx&&nx.off==0?nx.i:-1):0,'')+
