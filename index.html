@@ -217,7 +217,7 @@ const T={
  fb:{n:'Cijelo tijelo B',s:['noge','vuc','gur','core','kar']}
 };
 const DAYS={2:[['Ponedeljak','fa'],['Četvrtak','fb']],3:[['Ponedeljak','noge'],['Srijeda','gor'],['Petak','fb']],4:[['Ponedeljak','noge'],['Utorak','gor'],['Četvrtak','kar'],['Petak','fa']],5:[['Ponedeljak','noge'],['Utorak','gor'],['Srijeda','kar'],['Petak','fa'],['Subota','fb']]};
-const GOAL={mrs:{n:'Mršavljenje',sets:3,reps:15,rest:40,sec:30},zat:{n:'Zatezanje',sets:3,reps:12,rest:60,sec:30},sna:{n:'Snaga',sets:4,reps:8,rest:90,sec:30},kon:{n:'Kondicija',sets:3,reps:15,rest:30,sec:40}};
+const GOAL={mrs:{n:'Mršavljenje',sets:3,reps:15,rest:40,sec:30},zat:{n:'Zatezanje',sets:3,reps:12,rest:60,sec:30},def:{n:'Definicija mišića',sets:4,reps:10,rest:75,sec:40},sna:{n:'Snaga',sets:4,reps:8,rest:90,sec:30},kon:{n:'Kondicija',sets:3,reps:15,rest:30,sec:40}};
 const LVL={1:'Početnik',2:'Srednji',3:'Napredni'};
 const LOC={kuca:['0'],buc:['0','b'],ter:['0','b','t']};
 EX.push(
@@ -285,7 +285,7 @@ function build(p,raw,nb){
  const dz=e=>{if(D)return Object.assign({},e,{t:1,sets:R,reps:0,sec:Math.max(20,DS+(lvl==1?-5:lvl==3?5:0)+bonus*5+adj*5)});const sec=e.t?Math.max(15,G.sec+(lvl==1?-10:lvl==3?15:0)+bonus*5+adj*5):0;return Object.assign({},e,{sets:e.g=='kar'?Math.min(sets,3):sets,reps:e.t?0:Math.max(5,G.reps+bonus*2+adj*2),sec})};
  return daysOf(p).map(([dn,k],di)=>{
   const used=new Set(),slots=T[k].s.slice();
-  if(D){if(p.min==30)slots.push(T[k].x)}else if((p.goal=='mrs'||p.goal=='kon')&&k!='kar')slots.push('kar');
+  if(D){if(p.min==30)slots.push(T[k].x)}else if((p.goal=='mrs'||p.goal=='kon'||p.goal=='def')&&k!='kar')slots.push('kar');
   const rec=isReps(p)?REPSD[di].c.concat(p.min==30?[REPSD[di].x]:[]).map(ch=>pickChain(p,ch,used)):slots.map(g=>{const c=poolFor(p,g);let i=cnt[g]||0,e,tries=0;
    do{e=c[i%c.length];i++;tries++}while(used.has(e.n)&&tries<c.length);
    cnt[g]=i;used.add(e.n);return e});
@@ -340,7 +340,7 @@ function vPro(){
  '<div class="row"><div><label for="w">Težina (kg)</label><input id="w" type="number" inputmode="decimal" min="30" max="250" step="0.1" required value="'+esc(p.w)+'"></div>'+
  '<div><label for="h">Visina (cm)</label><input id="h" type="number" inputmode="numeric" min="120" max="220" required value="'+esc(p.h)+'"></div>'+
  '<div><label for="ag">Godine</label><input id="ag" type="number" inputmode="numeric" min="14" max="90" required value="'+esc(p.age)+'"></div></div>'+
- '<label>Cilj</label>'+chips('goal',Object.entries(GOAL).map(([k,v])=>[k,v.n]))+
+ '<label>Cilj</label>'+chips('goal',Object.entries(GOAL).map(([k,v])=>[k,v.n]))+'<p class="mute" style="margin:6px 0 0"><b>Definicija mišića</b>: malo više mišića i manje masnoće, da se mišići vide. Serije od 10 ponavljanja, a na kraju svakog treninga kratki kardio.</p>'+
  '<label>Nivo</label>'+chips('lvl',Object.entries(LVL))+
  '<label>Način treninga</label>'+chips('mode',[['klas','Klasični, 2–5 dana nedeljno'],['dnev','Dnevni, svaki dan kratko']])+
  '<div id="f_days"'+(p.mode=='dnev'?' hidden':'')+'><label>Dana nedeljno</label>'+chips('days',[[2,'2'],[3,'3'],[4,'4'],[5,'5']])+'</div>'+
