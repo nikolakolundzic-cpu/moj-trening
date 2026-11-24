@@ -211,6 +211,16 @@ details.pf>summary::-webkit-details-marker{display:none}
 details.pf>summary>span:first-child{flex:1;min-width:0}
 details.pf[open]>summary .chev{transform:rotate(90deg)}
 details.pf[open]>summary{padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+
+/* još manji izbori u podešavanjima */
+[data-tab=pro] .chip{min-height:32px;padding:4px 10px;font-size:13.5px}
+[data-tab=pro] :is(#skin,#autoc,#hint,#rmon,[data-k]){border-radius:11px;padding:2px;gap:2px}
+[data-tab=pro] :is(#skin,#autoc,#hint,#rmon,[data-k=sex],[data-k=lvl],[data-k=loc],[data-k=min],[data-k=mode],[data-k=days],[data-k=job],[data-k=style]) .chip{min-height:30px;padding:4px;border-radius:9px;font-size:13.5px}
+[data-tab=pro] [data-k=goal],[data-tab=pro] [data-k=eq],[data-tab=pro] [data-k=prob]{border:0;padding:0;background:none}
+[data-tab=pro] label{margin:12px 0 5px;font-size:14px}
+[data-tab=pro] .btn{min-height:40px;padding:8px 16px;font-size:16px;border-radius:12px}
+[data-tab=pro] .card h2{font-size:28px}
+[data-tab=pro] .card p.mute{font-size:13.5px}
 </style>
 </head>
 <body>
@@ -441,7 +451,7 @@ function vPro(){
  '<label>Nivo</label>'+chips('lvl',Object.entries(LVL))+
  '<label>Način treninga</label>'+chips('mode',[['klas','Klasični (2–5 dana)'],['dnev','Dnevni (svaki dan)']])+
  '<div id="f_days"'+(p.mode=='dnev'?' hidden':'')+'><label>Dana nedeljno</label>'+chips('days',[[2,'2'],[3,'3'],[4,'4'],[5,'5']])+'</div>'+
- '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'><label>Koliko traje dnevni trening</label>'+chips('min',[[20,'20 min'],[30,'30 min']])+'<p class="mute" style="margin:6px 0 0">Vježbe na vrijeme, kružno, sa kratkim pauzama. Nedelja je lakši dan.</p><label>Stil dnevnog treninga</label>'+chips('style',[['mix','Mješovito'],['reps','Sklekovi i skokovi (dailyrepsguy)']])+'<p class="mute" style="margin:6px 0 0">Drugi stil je pravljen po uzoru na trening koji dailyrepsguy opisuje javno: sopstvena težina, sklekovi i skokovi svaki dan, uz kettlebell i vratilo ako ih imaš. Nije njegov zvanični program.</p></div>'+
+ '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'><label>Koliko traje dnevni trening</label>'+chips('min',[[20,'20 min'],[30,'30 min']])+'<p class="mute" style="margin:6px 0 0">Vježbe na vrijeme, kružno, sa kratkim pauzama. Nedelja je lakši dan.</p><label>Stil dnevnog treninga</label>'+chips('style',[['mix','Mješovito'],['reps','Sklekovi i skokovi']])+'<p class="mute" style="margin:6px 0 0">Drugi stil je pravljen po uzoru na trening koji dailyrepsguy opisuje javno: sopstvena težina, sklekovi i skokovi svaki dan, uz kettlebell i vratilo ako ih imaš. Nije njegov zvanični program.</p></div>'+
  '<label>Gdje treniraš</label>'+chips('loc',[['kuca','Kod kuće'],['ter','Teretana']])+
  '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bučice'],['k','Kettlebell'],['r','Elastična traka'],['p','Vratilo (šipka za zgibove)'],['v','Vibraciona platforma']],1)+'<p class="mute" style="margin:6px 0 0">Vibracionu platformu ne koristi u trudnoći, sa pejsmejkerom, epilepsijom, trombozom, implantatom u zglobu ili poslije skorašnje operacije, osim ako ljekar kaže da smiješ.</p></div>'+
  '<label>Problemi (izbaciću vježbe koje ih opterećuju)</label>'+chips('prob',[['koljena','Koljena'],['leđa','Leđa'],['ramena','Ramena']],1)+
@@ -1016,7 +1026,7 @@ function render(){
  if(!S.profile)tab='pro';
  header();
  const V={plan:[vPlan,bindPlan],cal:[vCal,bindCal],go:[vGo,bindGo],nap:[vNap,bindNap],pro:[vPro,bindPro]}[tab];
- $('#app').innerHTML=V[0]();
+ $('#app').dataset.tab=tab;$('#app').innerHTML=V[0]();
  if(lastTab!==tab){const a=$('#app');a.classList.remove('fade');void a.offsetWidth;a.classList.add('fade');lastTab=tab}
  if(!S.profile||tab=='pro')bindPro();else V[1]();
 }
