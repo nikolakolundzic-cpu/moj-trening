@@ -327,7 +327,7 @@ const T={
 const DAYS={2:[['Ponedeljak','fa'],['Četvrtak','fb']],3:[['Ponedeljak','noge'],['Srijeda','gor'],['Petak','fb']],4:[['Ponedeljak','noge'],['Utorak','gor'],['Četvrtak','kar'],['Petak','fa']],5:[['Ponedeljak','noge'],['Utorak','gor'],['Srijeda','kar'],['Petak','fa'],['Subota','fb']]};
 const GOAL={mrs:{n:'Mršavljenje',sets:3,reps:15,rest:40,sec:30},zat:{n:'Zatezanje',sets:3,reps:12,rest:60,sec:30},def:{n:'Definicija mišića',sets:4,reps:10,rest:75,sec:40},sna:{n:'Snaga',sets:4,reps:8,rest:90,sec:30},kon:{n:'Kondicija',sets:3,reps:15,rest:30,sec:40}};
 const LVL={1:'Početnik',2:'Srednji',3:'Napredni'};
-const LOC={kuca:['0'],buc:['0','b'],ter:['0','b','t']};
+
 EX.push(
  {n:'Statički čučanj na platformi',g:'noge',eq:'v',d:1,t:1,st:['koljena'],o:'Stani na uključenu platformu, stopala u širini kukova, i spusti se u polučučanj. Drži položaj.',s:'Koljena uvijek blago savijena, nikad ispružena do kraja dok platforma radi.'},
  {n:'Podizanje na prste na platformi',g:'noge',eq:'v',d:1,t:1,st:[],o:'Stani na platformu i polako se podiži na prste pa spuštaj.',s:'Ako treba, pridrži se za nešto zbog ravnoteže.'},
@@ -537,7 +537,6 @@ function bindPro(){
 }
 function addW(kg){const d=today();S.weights=S.weights.filter(x=>x.d!=d);S.weights.push({d,kg});S.weights.sort((a,b)=>a.d<b.d?-1:1);if(S.profile)S.profile.w=kg}
 
-function thisWeek(){return S.done.filter(x=>x.d>=wkStart(0))}
 const DIDX={'Ponedeljak':0,'Utorak':1,'Srijeda':2,'Četvrtak':3,'Petak':4,'Subota':5,'Nedelja':6};
 const stat=(b,s)=>'<div class="stat"><b>'+b+'</b><span>'+s+'</span></div>';
 function setMark(wk,d,j,v,toggle){S.marks=S.marks||{};const old=wkStart(-12);for(const k in S.marks)if(k<old)delete S.marks[k];
@@ -709,13 +708,6 @@ function makeList(){
  plan.forEach((d,i)=>{if(addD(pw,DIDX[d.dn])<S.start)return;d.ex.forEach((e,j)=>{if((m[i]||{})[j]!='ok'&&!seen.has(e.n)){seen.add(e.n);out.push(Object.assign({},e,{sets:2}))}})});
  return out.slice(0,6);
 }
-function vMake(){
- const L=makeList();if(!L.length)return '';
- const wk=wkStart(0),m=((S.marks||{})[wk]||{}).n||{},done=L.filter((_,j)=>m[j]=='ok').length;
- return '<div class="card makeup"><div class="day"><h2 style="margin:0">Nadoknada</h2><span class="tag'+(done==L.length?' ok':'')+'">'+done+' / '+L.length+'</span></div>'+
- '<p class="mute" style="margin:0">Ove vježbe su prošle nedelje ostale neodrađene. Dodaj ih na kraj bilo kog treninga ove nedelje, po 2 serije, i označi kad ih završiš.</p>'+
- '<ol class="ex">'+L.map((e,j)=>exLi(e,wk+'|n|'+j,m[j])).join('')+'</ol></div>';
-}
 let editDay=null,draft=[];
 const GN={noge:'Noge i zadnjica',gur:'Grudi, ramena i ruke',vuc:'Leđa i držanje',core:'Stomak',kar:'Kardio'};
 function vEdit(d,i){
@@ -746,7 +738,6 @@ const WD=['Ponedeljak','Utorak','Srijeda','Četvrtak','Petak','Subota','Nedelja'
 const fmtD=s=>+s.slice(8)+'.'+s.slice(5,7)+'.';
 const wdOf=s=>WD[(new Date(s+'T12:00:00').getDay()+6)%7];
 function dateOf(wk,i,dn){const sc=S.sched||{};for(let k=0;k<7;k++){const dt=addD(wk,k);if(sc[dt]===i)return dt}const def=addD(wk,DIDX[dn]);return sc[def]===undefined?def:null}
-function dinfo(wk,i,d){const dt=dateOf(wk,i,d.dn),def=addD(wk,DIDX[d.dn]);return dt?(dt==def?fmtD(dt):'pomjereno na '+wdOf(dt).toLowerCase()+' '+fmtD(dt)):'nije raspoređeno ove nedelje'}
 function onDate(X,plan){const wk=wkOf(X);return plan.map((d,i)=>dateOf(wk,i,d.dn)==X?i:-1).filter(i=>i>=0)}
 function wStat(X,plan,i){const dm=((S.marks||{})[wkOf(X)]||{})[i]||{},n=plan[i].ex.length;let o=0;plan[i].ex.forEach((_,j)=>{if(dm[j]=='ok')o++});
  return {o,n,s:o>=n?'ok':o>0?'part':X<today()?'miss':'plan'}}
@@ -832,7 +823,6 @@ const nEx=n=>pl(n,'vježba','vježbe','vježbi');
 function vPlan(){
  if(!S.profile)return vPro();
  const p=S.profile,plan=withMake(build(p)),wkN=week(),wk=wkStart(0),m=(S.marks||{})[wk]||{},sm=summ(0),nx=nextTr(),td=today();
- const nxT=nx?(nx.dt==td?'Danas':nx.dt==addD(td,1)?'Sjutra':wdOf(nx.dt).slice(0,3)+' '+fmtD(nx.dt)):'–';
  const mkAll=plan.reduce((a,d,i)=>a.concat(d.ex.map((e,j)=>e.mk?((m[i]||{})[j]=='ok'):null).filter(x=>x!==null)),[]);
  const nxBig=nx?(nx.dt==td?'Danas':nx.dt==addD(td,1)?'Sjutra':wdOf(nx.dt)):'';
  return (W&&W.ph!='done'?'<div class="card nextc"><span class="mute">Trening u toku</span><p style="margin:0;font-size:17px"><b>'+esc(W.d.name)+'</b> · vježba '+(W.i+1)+' od '+W.d.ex.length+'</p><button class="btn" type="button" id="resume">Nastavi</button></div>':nx?'<div class="card nextc"><span class="mute">Sledeći trening</span><div class="nxrow"><b class="pct">'+nxBig+'</b><span class="mute">'+(nxBig==wdOf(nx.dt)?'':wdOf(nx.dt).toLowerCase()+', ')+fmtD(nx.dt)+'</span></div><p style="margin:2px 0 12px"><b>'+nx.d.name+'</b> · '+nEx(nx.d.ex.length)+'</p>'+
