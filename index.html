@@ -231,6 +231,12 @@ details.pf[open]>summary{padding-bottom:6px;border-bottom:1px solid var(--line);
 [data-tab=pro] .card{padding:14px 16px}
 [data-tab=pro] .card h2{font-size:24px;margin-bottom:4px}
 [data-tab=pro] .card h3{font-size:19px}
+
+body.inwork .top{display:none}
+body.inwork main{padding-top:max(14px,env(safe-area-inset-top))}
+.wbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;margin-bottom:12px}
+.wbar .btn{min-height:38px;padding:6px 12px;font-size:15px}
+.wbar b{text-align:center;font:700 20px "Barlow Condensed",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -240,7 +246,6 @@ details.pf[open]>summary{padding-bottom:6px;border-bottom:1px solid var(--line);
 <nav id="nav">
 <button data-t="plan">Plan</button>
 <button data-t="cal">Kalendar</button>
-<button data-t="go">Trening</button>
 <button data-t="nap">Napredak</button>
 <button data-t="pro">Podešavanja</button>
 </nav></div></header>
@@ -818,7 +823,7 @@ function vPlan(){
  const nxT=nx?(nx.dt==td?'Danas':nx.dt==addD(td,1)?'Sjutra':wdOf(nx.dt).slice(0,3)+' '+fmtD(nx.dt)):'–';
  const mkAll=plan.reduce((a,d,i)=>a.concat(d.ex.map((e,j)=>e.mk?((m[i]||{})[j]=='ok'):null).filter(x=>x!==null)),[]);
  const nxBig=nx?(nx.dt==td?'Danas':nx.dt==addD(td,1)?'Sjutra':wdOf(nx.dt)):'';
- return (nx?'<div class="card nextc"><span class="mute">Sledeći trening</span><div class="nxrow"><b class="pct">'+nxBig+'</b><span class="mute">'+(nxBig==wdOf(nx.dt)?'':wdOf(nx.dt).toLowerCase()+', ')+fmtD(nx.dt)+'</span></div><p style="margin:2px 0 12px"><b>'+nx.d.name+'</b> · '+nEx(nx.d.ex.length)+'</p>'+
+ return (W&&W.ph!='done'?'<div class="card nextc"><span class="mute">Trening u toku</span><p style="margin:0;font-size:17px"><b>'+esc(W.d.name)+'</b> · vježba '+(W.i+1)+' od '+W.d.ex.length+'</p><button class="btn" type="button" id="resume">Nastavi</button></div>':nx?'<div class="card nextc"><span class="mute">Sledeći trening</span><div class="nxrow"><b class="pct">'+nxBig+'</b><span class="mute">'+(nxBig==wdOf(nx.dt)?'':wdOf(nx.dt).toLowerCase()+', ')+fmtD(nx.dt)+'</span></div><p style="margin:2px 0 12px"><b>'+nx.d.name+'</b> · '+nEx(nx.d.ex.length)+'</p>'+
   (nx.dt==td&&nx.off==0?'<button class="btn" data-go="'+nx.i+'">Počni</button>':nx.off==0?'<button class="btn ghost" data-open-go="'+nx.i+'">Vježbe</button>':'')+'</div>':'')+
  vWeek(sm)+
  (mkAll.length?'<p class="mute">Nadoknada iz prošle nedelje je ubačena u treninge ispod: odrađeno '+mkAll.filter(Boolean).length+' od '+mkAll.length+'.</p>':'')+
@@ -841,6 +846,7 @@ function vPlan(){
 }
 function bindPlan(){
  bindEdit();
+ {const rs=$('#resume');if(rs)rs.addEventListener('click',()=>setTab('go'))}
  document.querySelectorAll('[data-open-go]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.openGo;openDay=i;render();const c=$('#day'+i);if(c)c.scrollIntoView({block:'start',behavior:'smooth'})}));
  document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.open;openDay=openDay===i?-1:i;render();const c=$('#day'+i);if(c)c.scrollIntoView({block:'nearest'})}));
  {const q=$('#quick');if(q)q.addEventListener('click',()=>startSpecial('quick'));const t=$('#strb');if(t)t.addEventListener('click',()=>startSpecial('str'))}
@@ -887,12 +893,12 @@ function vGo(){
  else if(W.ph=='work')mid='<div class="ring" id="ring" style="--p:'+(W.t/(W.tt||1))+'"><div><div class="big" id="clock">'+fmt(W.t)+'</div><div class="lbl">radi</div></div></div><div class="acts"><button class="btn ghost" id="fin">Završi ranije</button></div>';
  else mid='<div class="ring" style="--p:1"><div><div class="big">'+(e.t?e.sec:e.reps)+'</div><div class="lbl">'+(e.t?'sekundi':'ponavljanja')+'</div></div></div>'+(sugg(e)?'<p class="sug">'+sugg(e)+'</p>':'')+
  (e.t||W.mode?'':'<div class="logrow"><label>Ponavljanja<input id="lr" type="number" inputmode="numeric" min="0" max="200" value="'+e.reps+'"></label>'+(isWt(e)?'<label>Težina (kg)<input id="lk" type="number" inputmode="decimal" min="0" max="300" step="0.5" value="'+(((W.rec||{})[W.i]||[]).slice(-1)[0]||{kg:sugKg(e)}).kg+'"></label>':'')+'</div>')+'<div class="acts">'+(e.t?'<button class="btn" id="tmr">Pokreni '+e.sec+' s</button>':'<button class="btn" id="fin">Serija gotova</button>')+'<button class="btn ghost" id="skx">Preskoči vježbu</button></div>';
- return '<div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">'+(d.circ?'Krug':'Serija')+' '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
+ return '<div class="wbar"><button class="btn ghost" id="wback" type="button">‹ Plan</button><b>'+esc(d.name)+'</b><span></span></div><div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">'+(d.circ?'Krug':'Serija')+' '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
  '<div class="card howto"><h3>Kako se radi</h3><p>'+e.o+'</p><p><strong>Savjet:</strong> '+e.s+'</p><p>'+ytLink(e.n)+'</p></div><button class="btn ghost" id="quit">Prekini trening</button>';
 }
 function bindGo(){
  const on=(id,f)=>{const b=$('#'+id);if(b)b.addEventListener('click',f)};
- on('toplan',()=>{W=null;setTab('plan')});on('strgo',()=>startSpecial('str'));
+ on('toplan',()=>{W=null;setTab('plan')});on('wback',()=>setTab('plan'));on('strgo',()=>startSpecial('str'));
  document.querySelectorAll('[data-rate]').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.rate;S.adj=Math.max(-3,Math.min(3,(S.adj||0)+v));S.rates=(S.rates||[]).concat({d:today(),v}).slice(-30);W.rated=v;save();render()}));on('skip',()=>{stopTick();W.ph='ready';render()});
  on('tmr',()=>run(W.d.ex[W.i].sec,'work'));on('fin',()=>{stopTick();const e=W.d.ex[W.i];W.rec=W.rec||{};const R=W.rec[W.i]=W.rec[W.i]||[];
   if(W.ph=='ready'&&!e.t){const r=+(($('#lr')||{}).value||e.reps),k=$('#lk')?+$('#lk').value||0:0;R.push(k?{r,kg:k}:{r})}
@@ -1039,6 +1045,8 @@ function render(){
  $('#nav').style.display=uid?'':'none';
  if(!uid){header();$('#app').innerHTML=authReady?vLogin():'<p class="mute">Učitavam…</p>';if(authReady)bindLogin();return}
  if(!S.profile)tab='pro';
+ if(tab=='go'&&!W)tab='plan';
+ document.body.classList.toggle('inwork',tab=='go');
  header();
  const V={plan:[vPlan,bindPlan],cal:[vCal,bindCal],go:[vGo,bindGo],nap:[vNap,bindNap],pro:[vPro,bindPro]}[tab];
  $('#app').dataset.tab=tab;$('#app').innerHTML=V[0]();
