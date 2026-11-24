@@ -208,6 +208,17 @@ const GOAL={mrs:{n:'Mršavljenje',sets:3,reps:15,rest:40,sec:30},zat:{n:'Zatezan
 const LVL={1:'Početnik',2:'Srednji',3:'Napredni'};
 const LOC={kuca:['0'],buc:['0','b'],ter:['0','b','t']};
 EX.push(
+ {n:'Skok iz čučnja',g:'noge',eq:'0',d:2,hi:1,st:['koljena'],o:'Spusti se u čučanj, pa eksplozivno skoči uvis i mekano doskoči nazad u čučanj.',s:'Doskok tiho, na prednji dio stopala, koljena prate prste.'},
+ {n:'Skok iz iskoraka',g:'noge',eq:'0',d:3,hi:1,st:['koljena'],o:'Iz iskoraka skoči i u vazduhu zamijeni noge, pa doskoči u iskorak na drugu stranu.',s:'Ako je preteško, radi obične iskorake bez skoka.'},
+ {n:'Makaze (flutter kicks)',g:'core',eq:'0',d:1,st:[],o:'Lezi na leđa, ruke ispod zadnjice, podigni ispružene noge malo od poda i naizmjenično ih mrdaj gore-dolje.',s:'Donji dio leđa drži pritisnut uz pod.'},
+ {n:'Podizanje nogu ležeći',g:'core',eq:'0',d:2,st:['leđa'],o:'Lezi na leđa, ispružene noge podiži do vertikale pa ih polako spuštaj, bez dodira poda.',s:'Spuštaj sporo, leđa ne odvajaj od poda.'},
+ {n:'Zamah kettlebellom',g:'noge',eq:'k',d:2,st:['leđa'],o:'Kettlebell između nogu, guraj kukove unazad pa ih snažno ispruži naprijed da zvono poleti do visine grudi.',s:'Snaga dolazi iz kukova, ne iz ruku. Leđa ravna.'},
+ {n:'Goblet čučanj sa kettlebellom',g:'noge',eq:'k',d:2,st:['koljena'],o:'Drži kettlebell za ručke uz grudi i radi duboki čučanj.',s:'Laktovi idu između koljena, grudi gore.'},
+ {n:'Veslanje kettlebellom',g:'vuc',eq:'k',d:2,st:[],o:'Osloni se jednom rukom na klupu ili stolicu i vuci kettlebell ka kuku.',s:'Lopatica ide unazad, ne rotiraj trup.'},
+ {n:'Potisak kettlebella iznad glave',g:'gur',eq:'k',d:2,st:['ramena','leđa'],o:'Kettlebell drži kod ramena, pa ga guraj iznad glave jednom rukom.',s:'Stomak stegnut, ruka ispružena do kraja.'}
+);
+
+EX.push(
  {n:'Razvlačenje trake',g:'vuc',eq:'r',d:1,st:[],o:'Drži traku ispred sebe u visini ramena, ruke ispružene, i razvlači je u stranu dok ne dodirne grudi.',s:'Skupi lopatice, ramena drži dolje.'},
  {n:'Veslanje sa trakom',g:'vuc',eq:'r',d:1,st:[],o:'Sjedi ispruženih nogu, traku zakači oko stopala i vuci krajeve ka stomaku.',s:'Leđa uspravna, laktovi uz tijelo.'},
  {n:'Čučanj sa trakom',g:'noge',eq:'r',d:2,st:['koljena'],o:'Stani na traku, krajeve drži kod ramena i radi čučanj.',s:'Traka najviše zateže na vrhu, ustani do kraja.'},
@@ -218,7 +229,7 @@ EX.push(
  {n:'Negativni zgibovi',g:'vuc',eq:'p',d:2,st:['ramena'],o:'Sa stolice dođi u položaj da je brada iznad šipke, pa se spuštaj što sporije, 3 do 5 sekundi.',s:'Najbolji put do prvog pravog zgiba.'},
  {n:'Zgibovi',g:'vuc',eq:'p',d:3,st:['ramena'],o:'Iz visa povuci se dok brada ne pređe šipku, pa se kontrolisano spusti.',s:'Bez ljuljanja, vuci laktovima nadolje.'}
 );
-const eqSet=p=>p.loc=='ter'?['0','b','t','r','p']:p.loc=='buc'?['0','b']:['0'].concat(p.eq||[]);
+const eqSet=p=>p.loc=='ter'?['0','b','t','r','p','k']:p.loc=='buc'?['0','b']:['0'].concat(p.eq||[]);
 const DAILY=[['Ponedjeljak','dn'],['Utorak','dg'],['Srijeda','dk'],['Četvrtak','df'],['Petak','dn'],['Subota','dg'],['Nedjelja','dl']];
 Object.assign(T,{dn:{n:'Noge i zadnjica',s:['noge','noge','core','noge','kar'],x:'noge'},dg:{n:'Gornji dio tijela',s:['gur','vuc','gur','vuc','core'],x:'core'},dk:{n:'Kardio i stomak',s:['kar','core','kar','noge','core'],x:'kar'},df:{n:'Cijelo tijelo',s:['noge','gur','vuc','core','kar'],x:'noge'},dl:{n:'Lagani dan',s:['core','vuc','noge','core','core'],x:'vuc'}});
 const isDaily=p=>p&&p.mode=='dnev';
@@ -249,7 +260,7 @@ function build(p,raw,nb){
    cnt[g]=i;used.add(e.n);return e});
   const cu=!raw&&S.custom&&S.custom[ckey(p)]&&S.custom[ckey(p)][di];
   const list=cu?cu.map(n=>EX.find(e=>e.n==n)).filter(Boolean):rec;
-  return {dn,name:T[k].n,ex:(list.length?list:rec).map(dz),rec:rec.map(e=>e.n),slots,custom:!!(cu&&list.length),rest:D?(p.min==30?15:20):G.rest};
+  return {dn,name:T[k].n,ex:(list.length?list:rec).map(dz),rec:rec.map(e=>e.n),slots,custom:!!(cu&&list.length),rest:D?(p.min==30?15:20):G.rest,circ:D};
  });
 }
 const dose=e=>e.sets+' × '+(e.t?e.sec+' s':e.reps+(e.g=='noge'&&/Iskorak|jednoj/.test(e.n)?' po nozi':''));
@@ -303,7 +314,7 @@ function vPro(){
  '<div id="f_days"'+(p.mode=='dnev'?' hidden':'')+'><label>Dana nedjeljno</label>'+chips('days',[[2,'2'],[3,'3'],[4,'4'],[5,'5']])+'</div>'+
  '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'><label>Koliko traje dnevni trening</label>'+chips('min',[[20,'20 min'],[30,'30 min']])+'<p class="mute" style="margin:6px 0 0">Svaki dan drugi dio tijela, vježbe na vrijeme sa kratkim pauzama. Nedjelja je lakši dan.</p></div>'+
  '<label>Gdje treniraš</label>'+chips('loc',[['kuca','Kod kuće'],['ter','Teretana']])+
- '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bućice'],['r','Elastična traka'],['p','Šipka za zgibove']],1)+'</div>'+
+ '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bućice'],['k','Kettlebell'],['r','Elastična traka'],['p','Šipka za zgibove']],1)+'</div>'+
  '<label>Problemi (izbaciću vježbe koje ih opterećuju)</label>'+chips('prob',[['koljena','Koljena'],['leđa','Leđa'],['ramena','Ramena']],1)+
  '<p id="err" class="mute" style="color:var(--red)"></p><button class="btn">'+(S.profile?'Sačuvaj i osvježi plan':'Napravi moj plan')+'</button></form>'+
  (S.profile?'<div class="card"><h3>Kopija podataka</h3><p class="mute">Kopiraj sve podatke i sačuvaj ih npr. u Bilješke na telefonu. Kasnije ih zalijepi ovdje da vratiš sve kako je bilo.</p><div class="acts" style="justify-content:flex-start"><button type="button" class="btn ghost" id="bkc">Kopiraj podatke</button><button type="button" class="btn ghost" id="bki">Učitaj kopiju</button></div><textarea id="bkt" rows="4" style="display:none;width:100%;margin-top:10px;font:13px monospace;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)"></textarea><button type="button" class="btn" id="bkl" style="display:none;margin-top:8px">Vrati podatke iz kopije</button><p class="mute" id="bkm"></p></div>':'')+
@@ -467,6 +478,16 @@ Object.assign(MOT,{
 Object.assign(MAPM,{'Razvlačenje trake':['pa','band pull apart'],'Veslanje sa trakom':['crow','seated resistance band row'],'Čučanj sa trakom':['sq','resistance band squat'],'Bočni hod sa trakom':['side','lateral band walk'],'Potisak trake iznad glave':['ohp','resistance band overhead press'],'Visenje na šipci':['hang','dead hang'],'Podizanje koljena u visu':['kr','hanging knee raise'],'Negativni zgibovi':['pull','negative pull ups'],'Zgibovi':['pull','pull ups proper form']});
 MAPMd['Potisak trake iznad glave']=0;
 
+
+Object.assign(MOT,{
+ jsq:{f:[pz(SQB),pz({h:[100,16],s:[100,28],p:[100,64],k:[102,90],a:[104,116],t:[112,118],e:[96,12],w:[94,-2]})],d:1100},
+ flut:{f:[pz(BR,{k:[114,118],a:[138,110],t:[142,104],k2:[114,122],a2:[140,122],t2:[144,116],e:[70,128],w:[84,128]}),pz(BR,{k:[114,122],a:[140,122],t:[144,116],k2:[114,118],a2:[138,110],t2:[142,104],e:[70,128],w:[84,128]})],d:700},
+ lraise:{f:[pz(BR,{k:[114,124],a:[138,122],t:[142,116],e:[70,128],w:[84,128]}),pz(BR,{k:[100,102],a:[106,78],t:[112,76],e:[70,128],w:[84,128]})],d:2600},
+ kbs:{f:[pz({p:[84,80],k:[96,104],a:[104,130],s:[114,60],h:[125,53],e:[108,78],w:[100,94]}),pz({e:[118,46],w:[134,46]})],d:1600}
+});
+Object.assign(MAPM,{'Skok iz čučnja':['jsq','jump squat'],'Skok iz iskoraka':['lg','jumping lunges'],'Makaze (flutter kicks)':['flut','flutter kicks'],'Podizanje nogu ležeći':['lraise','lying leg raises'],'Zamah kettlebellom':['kbs','kettlebell swing'],'Goblet čučanj sa kettlebellom':['gb','kettlebell goblet squat'],'Veslanje kettlebellom':['row1','kettlebell row'],'Potisak kettlebella iznad glave':['ohp','kettlebell overhead press']});
+MAPMd['Zamah kettlebellom']=1;MAPMd['Potisak kettlebella iznad glave']=1;MAPMd['Goblet čučanj sa kettlebellom']=1;
+
 const mkBtns=(key,v)=>'<div class="mk"><button class="mb ok'+(v=='ok'?' on':'')+'" data-mk="'+key+'|ok" aria-label="Odrađeno" aria-pressed="'+(v=='ok')+'">✓</button><button class="mb no'+(v=='no'?' on':'')+'" data-mk="'+key+'|no" aria-label="Nije odrađeno" aria-pressed="'+(v=='no')+'">✗</button></div>';
 const exLi=(e,key,v)=>'<li class="'+(v||'')+'">'+anim(e.n,'thumb')+'<div><b>'+e.n+'</b><br><span class="dose">'+dose(e)+'</span>'+(sugg(e)?'<br><span class="sug">'+sugg(e)+'</span>':'')+'</div>'+mkBtns(key,v)+'<details><summary>Kako se radi</summary>'+anim(e.n,'demo')+e.o+' <br><strong>Savjet:</strong> '+e.s+'<br>'+ytLink(e.n)+'</details></li>';
 function vWeek(sm){
@@ -613,7 +634,7 @@ function vPlan(){
  '<p class="mute">Plan postaje teži poslije svake dvije nedjelje u kojima odradiš bar 80%. Do sada takvih nedjelja: '+qualW()+'.'+(S.adj?' Po tvojim ocjenama treninzi su '+(S.adj>0?'pojačani':'olakšani')+' za '+Math.abs(S.adj*2)+' ponavljanja.':'')+'</p>'+
  '<div class="card"><h3>Zagrijavanje prije svakog treninga</h3><ol class="ex plain">'+WARM.map(w=>'<li><span>'+w+'</span></li>').join('')+'</ol></div>'+
  plan.map((d,i)=>{if(editDay===i)return vEdit(d,i);const dm=m[i]||{},all=d.ex.every((_,j)=>dm[j]=='ok'),bn=d.base||d.ex.length;
-  return '<div class="card"><div class="day"><h2 style="margin:0">'+d.dn+'</h2><span class="tag'+(all?' ok':'')+'">'+(all?'✓ Sve odrađeno':d.custom?'Tvoj izbor':d.name)+'</span></div><p class="mute" style="margin:0">'+dinfo(wk,i,d)+' · odmor između serija '+d.rest+' s · označi ✓ ili ✗ za svaku vježbu</p><ol class="ex">'+
+  return '<div class="card"><div class="day"><h2 style="margin:0">'+d.dn+'</h2><span class="tag'+(all?' ok':'')+'">'+(all?'✓ Sve odrađeno':d.custom?'Tvoj izbor':d.name)+'</span></div><p class="mute" style="margin:0">'+dinfo(wk,i,d)+(d.circ?' · kružno: '+d.ex[0].sets+' kruga, pauza '+d.rest+' s između vježbi':' · odmor između serija '+d.rest+' s')+' · označi ✓ ili ✗ za svaku vježbu</p><ol class="ex">'+
   d.ex.slice(0,bn).map((e,j)=>exLi(e,wk+'|'+i+'|'+j,dm[j])).join('')+(bn<d.ex.length?'</ol><h3 class="gh">Nadoknada iz prošle nedjelje</h3><ol class="ex">'+d.ex.slice(bn).map((e,j)=>exLi(e,wk+'|'+i+'|'+(bn+j),dm[bn+j])).join(''):'')+
   '</ol><div class="acts" style="justify-content:flex-start;margin-top:0"><button class="btn" data-go="'+i+'">Počni trening</button><button class="btn ghost" data-edit="'+i+'">Izaberi vježbe</button></div></div>'}).join('')+
  (isDaily(p)?'<p class="rest">Svaki trening traje oko '+(p.min||20)+' min sa zagrijavanjem i istezanjem. Ako je neki dan preteško, uradi kratki trening ili samo istezanje.</p>':'<p class="rest">Ostali dani su za odmor, šetnju ili lagano istezanje. Mišići jačaju dok se odmaraju.</p>')+
@@ -637,7 +658,12 @@ function startW(k){const d=withMake(build(S.profile))[k];W={k,d,i:0,set:1,ph:'re
 function stopTick(){clearInterval(tick);tick=null}
 function run(sec,ph){stopTick();W.ph=ph;W.t=sec;render();tick=setInterval(()=>{W.t--;if(W.t<=0){stopTick();beep();if(ph=='rest')W.ph='ready';else{W.rec=W.rec||{};(W.rec[W.i]=W.rec[W.i]||[]).push({r:sec});afterSet()}render();return}const el=$('#clock');if(el)el.textContent=fmt(W.t)},1000)}
 const fmt=s=>s>=60?Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):String(s);
+function finishW(){stopTick();W.ph='done';if(W.k>=0)S.done.push({d:today(),k:W.k});if(W.mode=='quick'){S.quick=S.quick||{};S.quick[today()]=1}save();render()}
+function cNext(){const L=W.d.ex.length,R=Math.max(...W.d.ex.map(x=>x.sets));let i=W.i,r=W.set;
+ for(let g=0;g<=L*R;g++){i++;if(i>=L){i=0;r++}if(r>R)return finishW();if(!(W.sk||{})[i]&&r<=W.d.ex[i].sets){const nr=r!=W.set;W.i=i;W.set=r;W.nr=nr;return run(nr?60:W.d.rest,'rest')}}
+ finishW()}
 function afterSet(){const e=W.d.ex[W.i];
+ if(W.d.circ){if(W.set>=e.sets){if(W.k>=0)setMark(wkStart(0),W.k,W.i,'ok');commitLog(W.i)}cNext();return}
  if(W.set<e.sets){W.set++;run(W.d.rest,'rest');return}
  if(W.k>=0)setMark(wkStart(0),W.k,W.i,'ok');commitLog(W.i);nextEx()}
 function nextEx(){
@@ -646,17 +672,17 @@ function nextEx(){
 function vGo(){
  if(!S.profile)return vPro();
  if(!W)return '<div class="card"><h2>Izaberi trening</h2><p class="mute">Na kartici Plan klikni „Počni trening” kod dana koji želiš.</p><button class="btn" id="toplan">Idi na plan</button></div>';
- const d=W.d,e=d.ex[W.i],tot=d.ex.reduce((a,x)=>a+x.sets,0),doneN=d.ex.slice(0,W.i).reduce((a,x)=>a+x.sets,0)+W.set-1;
+ const d=W.d,e=d.ex[W.i],tot=d.ex.reduce((a,x)=>a+x.sets,0),doneN=d.circ?d.ex.reduce((a,x,j)=>a+Math.min(x.sets,W.set-1+(j<W.i?1:0)),0):d.ex.slice(0,W.i).reduce((a,x)=>a+x.sets,0)+W.set-1;
  if(W.ph=='done')return '<div class="card live"><h2>'+(W.mode=='str'?'Istezanje završeno!':'Bravo, trening završen!')+'</h2><p class="mute">'+d.name+' · '+d.ex.length+' vježbi · '+tot+' serija</p>'+
  (W.mode=='str'?'':W.rated!==undefined?'<p>'+['Važi, sljedeći treninzi su malo lakši.','Super, ostaje ovako.','Važi, sljedeći treninzi su malo teži.'][W.rated+1]+'</p>':'<p><b>Kakav je bio trening?</b></p><div class="chips" style="justify-content:center"><button class="chip" data-rate="1">Lako</button><button class="chip" data-rate="0">Taman</button><button class="chip" data-rate="-1">Teško</button></div>')+
  '<div class="acts">'+(W.mode=='str'?'':'<button class="btn blue" id="strgo">Istezanje · 3 min</button>')+'<button class="btn" id="toplan">Nazad na plan</button></div></div>';
  const next=e;
  let mid;
- if(W.ph=='rest')mid='<p class="mute">Odmor</p><div class="big" id="clock">'+fmt(W.t)+'</div><p>Sljedeće: <b>'+next.n+'</b> · '+dose(next)+'</p><div class="acts"><button class="btn blue" id="skip">Preskoči odmor</button></div>';
+ if(W.ph=='rest')mid='<p class="mute">'+(d.circ&&W.nr?'Odmor prije '+W.set+'. kruga':'Odmor')+'</p><div class="big" id="clock">'+fmt(W.t)+'</div><p>Sljedeće: <b>'+next.n+'</b> · '+dose(next)+'</p><div class="acts"><button class="btn blue" id="skip">Preskoči odmor</button></div>';
  else if(W.ph=='work')mid='<div class="big" id="clock">'+fmt(W.t)+'</div><div class="acts"><button class="btn ghost" id="fin">Završi ranije</button></div>';
  else mid='<div class="big">'+(e.t?e.sec+' s':e.reps)+'</div><p class="mute" style="margin-top:0">'+(e.t?'sekundi':'ponavljanja')+'</p>'+(sugg(e)?'<p class="sug">'+sugg(e)+'</p>':'')+
  (e.t||W.mode?'':'<div class="logrow"><label>Ponavljanja<input id="lr" type="number" inputmode="numeric" min="0" max="200" value="'+e.reps+'"></label>'+(isWt(e)?'<label>Težina (kg)<input id="lk" type="number" inputmode="decimal" min="0" max="300" step="0.5" value="'+(((W.rec||{})[W.i]||[]).slice(-1)[0]||{kg:sugKg(e)}).kg+'"></label>':'')+'</div>')+'<div class="acts">'+(e.t?'<button class="btn" id="tmr">Pokreni '+e.sec+' s</button>':'<button class="btn" id="fin">Serija gotova</button>')+'<button class="btn ghost" id="skx">Preskoči vježbu</button></div>';
- return '<div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">Serija '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
+ return '<div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">'+(d.circ?'Krug':'Serija')+' '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
  '<div class="card howto"><h3>Kako se radi</h3><p>'+e.o+'</p><p><strong>Savjet:</strong> '+e.s+'</p><p>'+ytLink(e.n)+'</p></div><button class="btn ghost" id="quit">Prekini trening</button>';
 }
 function bindGo(){
@@ -667,7 +693,7 @@ function bindGo(){
   if(W.ph=='ready'&&!e.t){const r=+(($('#lr')||{}).value||e.reps),k=$('#lk')?+$('#lk').value||0:0;R.push(k?{r,kg:k}:{r})}
   else if(e.t)R.push({r:W.ph=='work'?e.sec-W.t:e.sec});
   afterSet();render()});
- on('skx',()=>{stopTick();if(W.k>=0)setMark(wkStart(0),W.k,W.i,'no');nextEx();render()});
+ on('skx',()=>{stopTick();if(W.k>=0)setMark(wkStart(0),W.k,W.i,'no');if(W.d.circ){W.sk=W.sk||{};W.sk[W.i]=1;cNext()}else nextEx();render()});
  on('quit',()=>{stopTick();W=null;setTab('plan')});
 }
 
