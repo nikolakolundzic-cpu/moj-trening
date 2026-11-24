@@ -659,7 +659,7 @@ function vPlan(){
  (openDay===undefined?(openDay=nx&&nx.off==0?nx.i:-1):0,'')+
  plan.map((d,i)=>{if(editDay===i)return vEdit(d,i);const dm=m[i]||{},all=d.ex.every((_,j)=>dm[j]=='ok'),bn=d.base||d.ex.length,op=openDay===i;
   const dt=dateOf(wk,i,d.dn),o=d.ex.filter((_,j)=>dm[j]=='ok').length,x=d.ex.filter((_,j)=>dm[j]=='no').length;
-  const st=all?'<span class="tag ok">✓ Odrađeno</span>':o?'<span class="tag">'+o+'/'+d.ex.length+'</span>':dt&&dt<td?'<span class="tag no">Propušteno</span>':dt==td?'<span class="tag today">Danas</span>':x?'<span class="tag">✗ '+x+'</span>':'';
+  const st=S.start&&dt&&dt<S.start&&!o?'<span class="tag">Prije početka</span>':all?'<span class="tag ok">✓ Odrađeno</span>':o?'<span class="tag">'+o+'/'+d.ex.length+'</span>':dt&&dt<td?'<span class="tag no">Propušteno</span>':dt==td?'<span class="tag today">Danas</span>':x?'<span class="tag">✗ '+x+'</span>':'';
   const head='<button class="dayh" data-open="'+i+'" aria-expanded="'+op+'"><span class="dl"><b>'+d.dn+'</b> <span class="mute">'+(dt?(dt==addD(wk,DIDX[d.dn])?fmtD(dt):'→ '+wdOf(dt).slice(0,3).toLowerCase()+' '+fmtD(dt)):'nije raspoređeno')+'</span><br><span class="mute">'+(d.custom?'Tvoj izbor':d.name)+' · '+d.ex.length+' vježbi</span></span>'+st+'<span class="chev" aria-hidden="true">›</span></button>';
   if(!op)return '<div class="card dayc'+(dt==td?' today':'')+'">'+head+'</div>';
   return '<div class="card dayc open'+(dt==td?' today':'')+'" id="day'+i+'">'+head+'<div class="dayb"><p class="mute" style="margin:0">'+dinfo(wk,i,d)+(d.circ?' · kružno: '+d.ex[0].sets+' kruga, pauza '+d.rest+' s između vježbi':' · odmor između serija '+d.rest+' s')+' · označi ✓ ili ✗ za svaku vježbu</p><ol class="ex">'+
