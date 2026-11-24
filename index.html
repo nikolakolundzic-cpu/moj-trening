@@ -270,6 +270,20 @@ main>.card,#app>.card{margin-bottom:14px}
 .ios .irow{min-height:48px}
 details.wlog summary{cursor:pointer;color:var(--mute);font-size:14px;margin-top:10px}
 .calh h2{font-size:24px!important}
+
+/* kompaktno: sledeći trening i ova nedelja */
+.nextc{padding:10px 14px!important}
+.nextc .pct{font-size:22px!important}
+.nextc p{font-size:14px!important}.nextc>.mute{font-size:12.5px!important}
+.nextc .btn{min-height:38px!important;padding:6px 14px!important;font-size:15px!important}
+.wkc{padding:12px 14px!important}
+.wkc h2{font-size:20px!important;display:inline}
+.wkc>p.mute:first-of-type{display:inline;margin-left:6px!important;font-size:12.5px}
+.wkc .wk2{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 18px;margin:6px 0 6px}
+.wkc .pct{font-size:26px}
+.wkc .wk2 span{display:inline;margin-left:5px;font-size:13px}
+.wkc .sbar{height:8px}
+.wkc>p.mute:last-child{font-size:12.5px;margin-top:6px!important}
 </style>
 </head>
 <body>
@@ -737,7 +751,7 @@ const mkBtns=(key,v)=>'<div class="mk"><button class="mb ok'+(v=='ok'?' on':'')+
 const exLi=(e,key,v)=>'<li class="'+(v||'')+'">'+anim(e.n,'thumb')+'<div><b>'+e.n+'</b><br><span class="dose">'+dose(e)+'</span>'+(sugg(e)?'<br><span class="sug">'+sugg(e)+'</span>':'')+'</div>'+mkBtns(key,v)+'<details><summary>Kako se radi</summary>'+anim(e.n,'demo')+e.o+' <br><strong>Savjet:</strong> '+e.s+'<br>'+ytLink(e.n)+'</details></li>';
 function vWeek(sm){
  const sun=new Date().getDay()==0;
- return '<div class="card"><h2 style="margin:0">'+(sun?'Nedeljni izvještaj':'Ova nedelja')+'</h2><p class="mute" style="margin:2px 0 0">'+range(0)+' · '+week()+'. nedelja programa</p>'+
+ return '<div class="card wkc"><h2 style="margin:0">'+(sun?'Nedeljni izvještaj':'Ova nedelja')+'</h2><p class="mute" style="margin:2px 0 0">'+range(0)+' · '+week()+'. nedelja programa</p>'+
  '<div class="wk2"><div><b class="pct" style="color:var(--ok)">'+sm.okp+'%</b><span>odrađeno</span></div><div><b class="pct" style="color:var(--no)">'+sm.nop+'%</b><span>'+(sun?'nije odrađeno':'propušteno do sada')+'</span></div></div>'+
  '<div class="sbar"><i style="width:'+sm.okp+'%;background:var(--ok)"></i><i style="width:'+sm.nop+'%;background:var(--no)"></i></div>'+
  (S.began?'':'<p class="mute" style="margin:10px 0 0">Program se računa od dana kad odradiš ili označiš prvi trening. Do tada se ništa ne broji kao propušteno.</p>')+'<p class="mute" style="margin-bottom:0">Odrađeno '+sm.ok+' od '+nEx(sm.total)+(sm.miss?', propušteno '+sm.miss:'')+(sm.open?', preostalo '+sm.open:'')+'.</p>'+
