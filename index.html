@@ -237,6 +237,25 @@ body.inwork main{padding-top:max(14px,env(safe-area-inset-top))}
 .wbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;margin-bottom:12px}
 .wbar .btn{min-height:38px;padding:6px 12px;font-size:15px}
 .wbar b{text-align:center;font:700 20px "Barlow Condensed",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* iOS izgled podešavanja */
+.ios-t{font-size:32px!important;margin:4px 2px 4px}
+.ios-h{font-size:13.5px;font-weight:600;color:var(--mute);margin:20px 6px 6px}
+.ios{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:0 14px;box-shadow:var(--shadow)}
+.ios .srow{grid-template-columns:minmax(0,1fr) auto;padding:9px 0;min-height:50px;border-bottom:1px solid var(--line);margin:0}
+.ios .srow:last-child{border-bottom:0}
+.ios .sl{font-weight:500;font-size:15.5px}
+.ios .srow>.chips{grid-auto-columns:auto!important}
+.ios .srow>.chips .chip{padding:5px 10px!important}
+.ios-f{font-size:13px;color:var(--mute);margin:7px 8px 0;line-height:1.4}
+.tgl{width:51px;height:31px;border-radius:99px;background:var(--line);border:0;position:relative;cursor:pointer;transition:background .2s;padding:0;justify-self:end}
+.tgl span{position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgb(0 0 0/.25);transition:transform .2s}
+.tgl.on{background:#34c759}.tgl.on span{transform:translateX(20px)}
+.tgl:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+[data-tab=pro] .card{margin-top:14px}
+.irow{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:50px;padding:0;background:none;border:0;border-bottom:1px solid var(--line);color:var(--ink);font:500 15.5px Barlow,system-ui,sans-serif;text-align:left;cursor:pointer}
+.irow:last-of-type{border-bottom:0}.irow span{color:var(--mute);font-size:22px}.irow.red{color:var(--no)}
+#cf .btn{margin:0 0 10px}
 </style>
 </head>
 <body>
@@ -433,10 +452,10 @@ function header(){
 const OWNER='nikola.kolundziic@gmail.com';
 const isOwner=()=>{const u=auth.currentUser;return !!(u&&u.emailVerified&&(u.email||'').toLowerCase()==OWNER)};
 function vRemind(){const R=S.remind||{},on=!!R.on,h=R.hour||18;
- return '<div class="card"><h3>Podsjetnik na trening</h3><p class="mute" style="margin:2px 0 4px">Na iPhone-u samo kad je aplikacija dodata na početni ekran.</p>'+
- '<div class="slist"><div class="srow"><span class="sl">Podsjetnik</span><div class="chips" id="rmon"><button type="button" class="chip'+(on?' on':'')+'" data-rmo="1">Uključen</button><button type="button" class="chip'+(on?'':' on')+'" data-rmo="0">Isključen</button></div></div>'+
- '<div class="srow"><label class="sl" for="rmh" style="margin:0">Sat</label><select id="rmh">'+Array.from({length:17},(_,i)=>i+6).map(x=>'<option value="'+x+'"'+(x==h?' selected':'')+'>'+x+':00</option>').join('')+'</select></div></div>'+
- '<p class="mute" id="rmmsg"></p>'+(on?'<button type="button" class="btn ghost" id="rmtest">Probaj obavještenje</button>':'')+'</div>'}
+ return '<p class="ios-h">Podsjetnik</p><div class="ios"><div class="srow"><span class="sl">Podsjetnik na trening</span><span id="rmon"><button type="button" class="tgl'+(on?' on':'')+'" role="switch" aria-checked="'+on+'" data-rmo="'+(on?'0':'1')+'"><span></span></button></span></div>'+
+ '<div class="srow"><label class="sl" for="rmh" style="margin:0">Vrijeme</label><select id="rmh" style="width:auto;min-height:36px;padding:4px 10px">'+Array.from({length:17},(_,i)=>i+6).map(x=>'<option value="'+x+'"'+(x==h?' selected':'')+'>'+x+':00</option>').join('')+'</select></div>'+
+ (on?'<div class="srow"><span class="sl">Probno obavještenje</span><button type="button" class="btn ghost" id="rmtest" style="min-height:34px;padding:4px 12px;font-size:15px">Pošalji</button></div>':'')+'</div>'+
+ '<p class="ios-f" id="rmmsg">Stiže na dan treninga. Na iPhone-u samo kad je aplikacija dodata na početni ekran.</p>'}
 async function enableRemind(){const msg=t=>{const m=$('#rmmsg');if(m)m.textContent=t};msg('Uključujem…');
  try{
   if(!('Notification' in window)||!(await isSupported())){msg('Ovaj pregledač ne podržava obavještenja. Na iPhone-u prvo dodaj aplikaciju na početni ekran (Podijeli → Dodaj na početni ekran) i otvori je odatle.');return}
@@ -457,18 +476,24 @@ function vPro(){
  const chips=(k,opts,multi)=>'<div class="chips" data-k="'+k+'"'+(multi?' data-m="1"':'')+'>'+opts.map(([v,l])=>'<button type="button" class="chip'+((multi?p[k].includes(v):String(p[k])==String(v))?' on':'')+'" data-v="'+v+'">'+l+'</button>').join('')+'</div>';
  const sr=(l,c)=>'<div class="srow"><span class="sl">'+l+'</span>'+c+'</div>';
  const pref=(l,k,o,d)=>{const cur=S[k]===true?'1':S[k]===undefined||S[k]===null||S[k]===false?d:String(S[k]);return sr(l,'<div class="chips" data-pref="'+k+'">'+o.map(([v,t])=>'<button type="button" class="chip'+(cur==v?' on':'')+'" data-pv="'+v+'">'+t+'</button>').join('')+'</div>')};
- return '<div class="card"><h2>Podešavanja</h2><div class="slist">'+
- sr('Tema','<div class="chips" id="skin" role="group" aria-label="Tema"><button type="button" class="chip" data-s="m">Narandžasta</button><button type="button" class="chip" data-s="f">Roze</button></div>')+
- sr('Tajmer','<div class="chips" id="autoc"><button type="button" class="chip'+(S.auto===false?'':' on')+'" data-a="1">Sam kreće</button><button type="button" class="chip'+(S.auto===false?' on':'')+'" data-a="0">Čeka klik</button></div>')+
- pref('Izgled','scheme',[['auto','Auto'],['light','Svijetlo'],['dark','Tamno']],'auto')+
- pref('Zvuk','sound',[['on','Zvuk'],['vib','Vibracija'],['off','Bez']],'on')+
- pref('Pauze','restAdj',[['-15','Kraće'],['0','Normalno'],['15','Duže']],'0')+
- pref('Zagrij.','autoWS',[['1','Uvijek'],['0','Ručno']],'0')+
- pref('Napredak','prog',[['slow','Sporo'],['norm','Normalno'],['fast','Brzo']],'norm')+
- pref('Korak kg','kgStep',[['0','Auto'],['1','1'],['2','2'],['2.5','2,5']],'0')+
- sr('Uputstva','<div class="chips" id="hint"><button type="button" class="chip'+(S.hideHow?'':' on')+'" data-h="0">Prikaži</button><button type="button" class="chip'+(S.hideHow?' on':'')+'" data-h="1">Sakrij</button></div>')+
- '</div><p class="mute" style="margin:8px 0 0">Tajmer: zvuk za zadnje 3 s, ekran se ne gasi. Zagrij.: zagrijavanje prije i istezanje poslije treninga kreću sami. Napredak: koliko brzo plan postaje teži.</p></div>'+(uid?vRemind():'')+(uid&&isOwner()?'<div class="card"><h3>Pregled korisnika</h3><p class="mute">Vidiš samo anonimnu statistiku, bez imena, emaila i težine.</p><button class="btn ghost" type="button" id="ownl">Učitaj pregled</button><div id="ownv"></div></div>':'')+
- (uid?'<div class="card"><h3>Nalog</h3><p class="mute" id="acc"></p>'+(auth.currentUser&&!auth.currentUser.emailVerified?'<div class="verif"><p style="margin:0 0 8px"><b>Email nije potvrđen.</b> Potvrda služi da niko drugi ne može koristiti tvoj email.</p><div class="acts" style="justify-content:flex-start;margin:0"><button class="btn" type="button" id="vsend">Pošalji link za potvrdu</button><button class="btn ghost" type="button" id="vdone">Potvrdio sam</button></div><p class="mute" id="vmsg" style="margin-bottom:0"></p></div>':'')+'<div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="lo" type="button">Odjavi se</button><button class="btn ghost warn" id="delacc" type="button">Obriši nalog</button></div><p class="mute" id="delmsg"></p><p class="mute" style="margin-bottom:0">Vlasniku aplikacije se šalje samo anonimna statistika: broj treninga, procenat po nedelji, cilj i način treninga. Bez imena, emaila, težine i mjera.</p></div>':'')+(S.profile?'<details class="card pf"><summary><span><b>Tvoji podaci i plan</b><br><span class="mute">'+esc([p.name,p.w&&p.w+' kg',p.h&&p.h+' cm',p.age&&p.age+' god.',(GOAL[p.goal]||{}).n].filter(Boolean).join(' · '))+'</span></span><span class="chev" aria-hidden="true">›</span></summary><form id="f">':'<form class="card" id="f"><h2>Hajde da počnemo</h2><p class="mute">Na osnovu ovoga pravim nedeljni plan.</p>')+
+ const tg=(k,on,extra)=>'<button type="button" class="tgl'+(on?' on':'')+'" role="switch" aria-checked="'+on+'" data-tg="'+k+'"'+(extra||'')+'><span></span></button>';
+ const grp=(h,rows,f)=>'<p class="ios-h">'+h+'</p><div class="ios">'+rows+'</div>'+(f?'<p class="ios-f">'+f+'</p>':'');
+ return '<h2 class="ios-t">Podešavanja</h2>'+
+ grp('Izgled',
+  sr('Tema','<div class="chips" id="skin" role="group" aria-label="Tema"><button type="button" class="chip" data-s="m">Narandžasta</button><button type="button" class="chip" data-s="f">Roze</button></div>')+
+  pref('Režim','scheme',[['auto','Auto'],['light','Svijetlo'],['dark','Tamno']],'auto'))+
+ grp('Trening',
+  sr('Tajmer kreće sam',tg('auto',S.auto!==false))+
+  sr('Zagrijavanje i istezanje',tg('autoWS',!!S.autoWS))+
+  sr('Uputstva za vježbe',tg('hideHow',!S.hideHow))+
+  pref('Zvuk','sound',[['on','Zvuk'],['vib','Vibracija'],['off','Bez']],'on')+
+  pref('Pauze','restAdj',[['-15','Kraće'],['0','Normalno'],['15','Duže']],'0'),
+  'Tajmer sam kreće posle odmora. Zagrijavanje se pusti prije treninga, a istezanje posle. Zadnje 3 sekunde se čuje zvuk, a ekran se ne gasi.')+
+ grp('Napredovanje',
+  pref('Brzina','prog',[['slow','Sporo'],['norm','Normalno'],['fast','Brzo']],'norm')+
+  pref('Korak kg','kgStep',[['0','Auto'],['1','1'],['2','2'],['2.5','2,5']],'0'),
+  'Koliko brzo plan postaje teži i za koliko kg aplikacija predlaže da povećaš težinu.')+(uid?vRemind():'')+(uid&&isOwner()?'<div class="card"><h3>Pregled korisnika</h3><p class="mute">Vidiš samo anonimnu statistiku, bez imena, emaila i težine.</p><button class="btn ghost" type="button" id="ownl">Učitaj pregled</button><div id="ownv"></div></div>':'')+
+ (uid?'<p class="ios-h">Nalog</p><div class="card" style="margin-top:0"><p class="mute" id="acc"></p>'+(auth.currentUser&&!auth.currentUser.emailVerified?'<div class="verif"><p style="margin:0 0 8px"><b>Email nije potvrđen.</b> Potvrda služi da niko drugi ne može koristiti tvoj email.</p><div class="acts" style="justify-content:flex-start;margin:0"><button class="btn" type="button" id="vsend">Pošalji link za potvrdu</button><button class="btn ghost" type="button" id="vdone">Potvrdio sam</button></div><p class="mute" id="vmsg" style="margin-bottom:0"></p></div>':'')+'<div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="lo" type="button">Odjavi se</button><button class="btn ghost warn" id="delacc" type="button">Obriši nalog</button></div><p class="mute" id="delmsg"></p><p class="mute" style="margin-bottom:0">Vlasniku aplikacije se šalje samo anonimna statistika: broj treninga, procenat po nedelji, cilj i način treninga. Bez imena, emaila, težine i mjera.</p></div>':'')+(S.profile?'<p class="ios-h">Profil</p><details class="card pf" style="margin-top:0"><summary><span><b>Tvoji podaci i plan</b><br><span class="mute">'+esc([p.name,p.w&&p.w+' kg',p.h&&p.h+' cm',p.age&&p.age+' god.',(GOAL[p.goal]||{}).n].filter(Boolean).join(' · '))+'</span></span><span class="chev" aria-hidden="true">›</span></summary><form id="f">':'<form class="card" id="f"><h2>Hajde da počnemo</h2><p class="mute">Na osnovu ovoga pravim nedeljni plan.</p>')+
  '<label for="nm">Ime</label><input id="nm" value="'+esc(p.name)+'" autocomplete="given-name">'+
  '<div class="row"><div><label for="w">Težina kg</label><input id="w" type="number" inputmode="decimal" min="30" max="250" step="0.1" required value="'+esc(p.w)+'"></div>'+
  '<div><label for="h">Visina cm</label><input id="h" type="number" inputmode="numeric" min="120" max="220" required value="'+esc(p.h)+'"></div>'+
@@ -484,13 +509,15 @@ function vPro(){
  '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Oprema kod kuće</label>'+chips('eq',[['b','Bučice'],['k','Kettlebell'],['r','Traka'],['p','Vratilo'],['v','Vibro platforma']],1)+'<p class="mute" style="margin:5px 0 0">Platforma: ne u trudnoći, sa pejsmejkerom, epilepsijom, trombozom, implantatom u zglobu ili poslije operacije, bez dozvole ljekara.</p></div>'+
  '<label>Problemi sa zglobovima</label>'+chips('prob',[['koljena','Koljena'],['leđa','Leđa'],['ramena','Ramena']],1)+
  '<p id="err" class="mute" style="color:var(--red)"></p><button class="btn">'+(S.profile?'Sačuvaj i osvježi plan':'Napravi moj plan')+'</button></form>'+(S.profile?'</details>':'')+
- (S.profile?'<div class="card"><h3>Kopija podataka</h3><p class="mute" style="margin:2px 0 0">Sačuvaj kopiju (npr. u Bilješke) da možeš sve vratiti.</p><div class="acts" style="justify-content:flex-start"><button type="button" class="btn ghost" id="bkc">Kopiraj podatke</button><button type="button" class="btn ghost" id="bki">Učitaj kopiju</button></div><textarea id="bkt" rows="4" style="display:none;width:100%;margin-top:10px;font:13px monospace;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)"></textarea><button type="button" class="btn" id="bkl" style="display:none;margin-top:8px">Vrati podatke iz kopije</button><p class="mute" id="bkm"></p></div>':'')+
+ (S.profile?'<p class="ios-h">Podaci</p><div class="ios"><button type="button" class="irow" id="bkc">Kopiraj podatke<span>›</span></button><button type="button" class="irow" id="bki">Učitaj kopiju<span>›</span></button>'+(typeof uid=='undefined'?'<button type="button" class="irow red" id="rst">Obriši sve podatke</button><span id="cf"></span>':'')+'</div><div><textarea id="bkt" rows="4" style="display:none;width:100%;margin-top:10px;font:13px monospace;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)"></textarea><button type="button" class="btn" id="bkl" style="display:none;margin-top:8px">Vrati podatke iz kopije</button><p class="ios-f" id="bkm">Kopiju sačuvaj npr. u Bilješke, da možeš sve vratiti.</p></div>':'')+
  (S.profile?'<div class="card"><h3>Kreni ispočetka</h3><p class="mute" style="margin:2px 0 0">Briše plan, treninge, dnevnik i mjere.</p><button class="btn ghost" id="rst">Obriši sve</button><span id="cf"></span></div>':'');
 }
 function bindPro(){
  const draft=normP(S.profile||{goal:'zat',lvl:'1',loc:'kuca',days:3,prob:[]});
  const vis=()=>{$('#f_days').hidden=draft.mode=='dnev';$('#f_min').hidden=draft.mode!='dnev';$('#f_eq').hidden=draft.loc=='ter'};
  bindSkin();applySkin();
+ document.querySelectorAll('[data-tg]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.tg;
+  if(k=='auto'){if(S.auto===false)delete S.auto;else S.auto=false}else if(k=='autoWS'){if(S.autoWS)delete S.autoWS;else S.autoWS=true}else if(k=='hideHow'){if(S.hideHow)delete S.hideHow;else S.hideHow=true}else return;save();render()}));
  document.querySelectorAll('[data-pref]').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('[data-pv]');if(!b)return;const k=g.dataset.pref,v=b.dataset.pv;
   const val=k=='autoWS'?v=='1':(k=='restAdj'||k=='kgStep')?+v:v;if(!val||val==='norm'||val==='on'||val==='auto')delete S[k];else S[k]=val;
   if(k=='scheme'){try{localStorage.setItem('trening-scheme',v)}catch(e){}}save();applySkin();render()}));
