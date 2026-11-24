@@ -458,7 +458,7 @@ function vPro(){
  const sr=(l,c)=>'<div class="srow"><span class="sl">'+l+'</span>'+c+'</div>';
  const pref=(l,k,o,d)=>{const cur=S[k]===true?'1':S[k]===undefined||S[k]===null||S[k]===false?d:String(S[k]);return sr(l,'<div class="chips" data-pref="'+k+'">'+o.map(([v,t])=>'<button type="button" class="chip'+(cur==v?' on':'')+'" data-pv="'+v+'">'+t+'</button>').join('')+'</div>')};
  return '<div class="card"><h2>Podešavanja</h2><div class="slist">'+
- sr('Tema','<div class="chips" id="skin" role="group" aria-label="Tema"><button type="button" class="chip" data-s="m">Muška</button><button type="button" class="chip" data-s="f">Ženska</button></div>')+
+ sr('Tema','<div class="chips" id="skin" role="group" aria-label="Tema"><button type="button" class="chip" data-s="m">Narandžasta</button><button type="button" class="chip" data-s="f">Roze</button></div>')+
  sr('Tajmer','<div class="chips" id="autoc"><button type="button" class="chip'+(S.auto===false?'':' on')+'" data-a="1">Sam kreće</button><button type="button" class="chip'+(S.auto===false?' on':'')+'" data-a="0">Čeka klik</button></div>')+
  pref('Izgled','scheme',[['auto','Auto'],['light','Svijetlo'],['dark','Tamno']],'auto')+
  pref('Zvuk','sound',[['on','Zvuk'],['vib','Vibracija'],['off','Bez']],'on')+
