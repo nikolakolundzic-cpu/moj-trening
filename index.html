@@ -522,7 +522,7 @@ function vWeek(sm){
  '<div class="wk2"><div><b class="pct" style="color:var(--ok)">'+sm.okp+'%</b><span>odrađeno</span></div><div><b class="pct" style="color:var(--no)">'+sm.nop+'%</b><span>'+(sun?'nije odrađeno':'propušteno do sada')+'</span></div></div>'+
  '<div class="sbar"><i style="width:'+sm.okp+'%;background:var(--ok)"></i><i style="width:'+sm.nop+'%;background:var(--no)"></i></div>'+
  '<p class="mute">'+sm.ok+' od '+sm.total+' vježbi odrađeno'+(sm.miss?' · '+sm.miss+' propušteno':'')+(sm.open?' · '+sm.open+' još na redu':'')+'</p>'+
- (sun&&sm.miss?'<p style="margin-bottom:0">Propuštene vježbe se od sutra pojavljuju kao nadoknada.</p>':'')+'</div>';
+ (sun&&sm.miss?'<p style="margin-bottom:0">Propuštene vježbe se od sjutra pojavljuju kao nadoknada.</p>':'')+'</div>';
 }
 function makeList(){
  if(!S.start)return [];const pw=wkStart(-1);if(addD(pw,6)<S.start)return [];
@@ -651,7 +651,7 @@ let openDay;
 function vPlan(){
  if(!S.profile)return vPro();
  const p=S.profile,plan=withMake(build(p)),wkN=week(),wk=wkStart(0),m=(S.marks||{})[wk]||{},sm=summ(0),nx=nextTr(),td=today();
- const nxT=nx?(nx.dt==td?'Danas':nx.dt==addD(td,1)?'Sutra':wdOf(nx.dt).slice(0,3)+' '+fmtD(nx.dt)):'–';
+ const nxT=nx?(nx.dt==td?'Danas':nx.dt==addD(td,1)?'Sjutra':wdOf(nx.dt).slice(0,3)+' '+fmtD(nx.dt)):'–';
  const mkAll=plan.reduce((a,d,i)=>a.concat(d.ex.map((e,j)=>e.mk?((m[i]||{})[j]=='ok'):null).filter(x=>x!==null)),[]);
  return '<div class="stats">'+stat(nxT,'sledeći trening'+(nx?': '+nx.d.name:''))+stat(sm.okp+'%','odrađeno ove nedelje')+stat(wkN+'.','nedelja programa')+'</div>'+
  vWeek(sm)+
