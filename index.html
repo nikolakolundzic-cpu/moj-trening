@@ -224,10 +224,10 @@ EX.push(
  {n:'Čučanj sa trakom',g:'noge',eq:'r',d:2,st:['koljena'],o:'Stani na traku, krajeve drži kod ramena i radi čučanj.',s:'Traka najviše zateže na vrhu, ustani do kraja.'},
  {n:'Bočni hod sa trakom',g:'noge',eq:'r',d:1,st:[],o:'Traka iznad koljena, blago čučni i hodaj bočno nekoliko koraka lijevo pa desno.',s:'Koljena stalno guraj ka van.'},
  {n:'Potisak trake iznad glave',g:'gur',eq:'r',d:1,st:['ramena'],o:'Stani na traku, krajeve drži kod ramena i guraj ih iznad glave.',s:'Stomak stegnut, ne izvijaj leđa.'},
- {n:'Visenje na šipci',g:'core',eq:'p',d:1,t:1,st:['ramena'],o:'Uhvati šipku nešto šire od ramena i visi, ramena lagano aktivna.',s:'Odlično za hvat, ramena i kičmu.'},
- {n:'Podizanje koljena u visu',g:'core',eq:'p',d:2,st:[],o:'Visi na šipci i podiži koljena ka grudima, pa ih polako spusti.',s:'Bez ljuljanja, radi stomakom.'},
- {n:'Negativni zgibovi',g:'vuc',eq:'p',d:2,st:['ramena'],o:'Sa stolice dođi u položaj da je brada iznad šipke, pa se spuštaj što sporije, 3 do 5 sekundi.',s:'Najbolji put do prvog pravog zgiba.'},
- {n:'Zgibovi',g:'vuc',eq:'p',d:3,st:['ramena'],o:'Iz visa povuci se dok brada ne pređe šipku, pa se kontrolisano spusti.',s:'Bez ljuljanja, vuci laktovima nadolje.'}
+ {n:'Visenje na vratilu',g:'core',eq:'p',d:1,t:1,st:['ramena'],o:'Uhvati vratilo nešto šire od ramena i visi, ramena lagano aktivna.',s:'Odlično za hvat, ramena i kičmu.'},
+ {n:'Podizanje koljena u visu',g:'core',eq:'p',d:2,st:[],o:'Visi na vratilu i podiži koljena ka grudima, pa ih polako spusti.',s:'Bez ljuljanja, radi stomakom.'},
+ {n:'Negativni zgibovi',g:'vuc',eq:'p',d:2,st:['ramena'],o:'Sa stolice dođi u položaj da je brada iznad vratila, pa se spuštaj što sporije, 3 do 5 sekundi.',s:'Najbolji put do prvog pravog zgiba.'},
+ {n:'Zgibovi',g:'vuc',eq:'p',d:3,st:['ramena'],o:'Iz visa povuci se dok brada ne pređe vratilo, pa se kontrolisano spusti.',s:'Bez ljuljanja, vuci laktovima nadolje.'}
 );
 const eqSet=p=>p.loc=='ter'?['0','b','t','r','p','k']:p.loc=='buc'?['0','b']:['0'].concat(p.eq||[]);
 const DAILY=[['Ponedeljak','dn'],['Utorak','dg'],['Srijeda','dk'],['Četvrtak','df'],['Petak','dn'],['Subota','dg'],['Nedelja','dl']];
@@ -331,9 +331,9 @@ function vPro(){
  '<label>Nivo</label>'+chips('lvl',Object.entries(LVL))+
  '<label>Način treninga</label>'+chips('mode',[['klas','Klasični, 2–5 dana nedeljno'],['dnev','Dnevni, svaki dan kratko']])+
  '<div id="f_days"'+(p.mode=='dnev'?' hidden':'')+'><label>Dana nedeljno</label>'+chips('days',[[2,'2'],[3,'3'],[4,'4'],[5,'5']])+'</div>'+
- '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'><label>Koliko traje dnevni trening</label>'+chips('min',[[20,'20 min'],[30,'30 min']])+'<p class="mute" style="margin:6px 0 0">Vježbe na vrijeme, kružno, sa kratkim pauzama. Nedelja je lakši dan.</p><label>Stil dnevnog treninga</label>'+chips('style',[['mix','Mješovito, svaki dan drugi dio tijela'],['reps','Sklekovi, skokovi i stomak (kao dailyrepsguy)']])+'<p class="mute" style="margin:6px 0 0">Drugi stil je pravljen po uzoru na trening koji dailyrepsguy opisuje javno: sopstvena težina, sklekovi i skokovi svaki dan, uz kettlebell i šipku ako ih imaš. Nije njegov zvanični program.</p></div>'+
+ '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'><label>Koliko traje dnevni trening</label>'+chips('min',[[20,'20 min'],[30,'30 min']])+'<p class="mute" style="margin:6px 0 0">Vježbe na vrijeme, kružno, sa kratkim pauzama. Nedelja je lakši dan.</p><label>Stil dnevnog treninga</label>'+chips('style',[['mix','Mješovito, svaki dan drugi dio tijela'],['reps','Sklekovi, skokovi i stomak (kao dailyrepsguy)']])+'<p class="mute" style="margin:6px 0 0">Drugi stil je pravljen po uzoru na trening koji dailyrepsguy opisuje javno: sopstvena težina, sklekovi i skokovi svaki dan, uz kettlebell i vratilo ako ih imaš. Nije njegov zvanični program.</p></div>'+
  '<label>Gdje treniraš</label>'+chips('loc',[['kuca','Kod kuće'],['ter','Teretana']])+
- '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bučice'],['k','Kettlebell'],['r','Elastična traka'],['p','Šipka za zgibove']],1)+'</div>'+
+ '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bučice'],['k','Kettlebell'],['r','Elastična traka'],['p','Vratilo (šipka za zgibove)']],1)+'</div>'+
  '<label>Problemi (izbaciću vježbe koje ih opterećuju)</label>'+chips('prob',[['koljena','Koljena'],['leđa','Leđa'],['ramena','Ramena']],1)+
  '<p id="err" class="mute" style="color:var(--red)"></p><button class="btn">'+(S.profile?'Sačuvaj i osvježi plan':'Napravi moj plan')+'</button></form>'+
  (S.profile?'<div class="card"><h3>Kopija podataka</h3><p class="mute">Kopiraj sve podatke i sačuvaj ih npr. u Bilješke na telefonu. Kasnije ih zalijepi ovdje da vratiš sve kako je bilo.</p><div class="acts" style="justify-content:flex-start"><button type="button" class="btn ghost" id="bkc">Kopiraj podatke</button><button type="button" class="btn ghost" id="bki">Učitaj kopiju</button></div><textarea id="bkt" rows="4" style="display:none;width:100%;margin-top:10px;font:13px monospace;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)"></textarea><button type="button" class="btn" id="bkl" style="display:none;margin-top:8px">Vrati podatke iz kopije</button><p class="mute" id="bkm"></p></div>':'')+
@@ -494,7 +494,7 @@ Object.assign(MOT,{
  pull:{f:[pz(HG),pz({w:[100,10],e:[92,30],s:[100,22],h:[105,10],p:[100,58],k:[102,84],a:[100,108],t:[105,110]})],pr:'pbar',d:2600},
  kr:{f:[pz(HG),pz(HG,{k:[124,76],a:[124,100],t:[130,100],p:[102,78]})],pr:'pbar'}
 });
-Object.assign(MAPM,{'Razvlačenje trake':['pa','band pull apart'],'Veslanje sa trakom':['crow','seated resistance band row'],'Čučanj sa trakom':['sq','resistance band squat'],'Bočni hod sa trakom':['side','lateral band walk'],'Potisak trake iznad glave':['ohp','resistance band overhead press'],'Visenje na šipci':['hang','dead hang'],'Podizanje koljena u visu':['kr','hanging knee raise'],'Negativni zgibovi':['pull','negative pull ups'],'Zgibovi':['pull','pull ups proper form']});
+Object.assign(MAPM,{'Razvlačenje trake':['pa','band pull apart'],'Veslanje sa trakom':['crow','seated resistance band row'],'Čučanj sa trakom':['sq','resistance band squat'],'Bočni hod sa trakom':['side','lateral band walk'],'Potisak trake iznad glave':['ohp','resistance band overhead press'],'Visenje na vratilu':['hang','dead hang'],'Podizanje koljena u visu':['kr','hanging knee raise'],'Negativni zgibovi':['pull','negative pull ups'],'Zgibovi':['pull','pull ups proper form']});
 MAPMd['Potisak trake iznad glave']=0;
 
 
@@ -782,7 +782,7 @@ onAuthStateChanged(auth,async u=>{
  tab=S.profile?'plan':'pro';render();
 });
 function render(){
- if(S.log||S.custom){const fx=n=>String(n).replace(/u\u0107ic/g,'učic');
+ if(S.log||S.custom){const fx=n=>String(n).replace(/u\u0107ic/g,'učic').replace('Visenje na \u0161ipci','Visenje na vratilu');
   if(S.log)for(const k of Object.keys(S.log)){const n=fx(k);if(n!==k){S.log[n]=(S.log[n]||[]).concat(S.log[k]);delete S.log[k]}}
   if(S.custom)for(const c of Object.values(S.custom))for(const d in c)if(Array.isArray(c[d]))c[d]=c[d].map(fx)}
  document.documentElement.dataset.hint=S.hideHow?'off':'';
