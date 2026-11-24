@@ -118,6 +118,7 @@ svg.big{display:block;width:100%;max-width:340px;aspect-ratio:200/140;margin:8px
 th{text-align:left;font-size:14px;color:var(--mute);font-weight:600;padding:6px 4px}
 [data-hint=off] ol.ex .thumb,[data-hint=off] ol.ex details,[data-hint=off] svg.big,[data-hint=off] .howto{display:none}
 [data-hint=off] ol.ex li:has(.thumb){grid-template-columns:minmax(0,1fr) auto}
+[hidden]{display:none!important}
 .makeup{border:2px dashed var(--red)}
 .note{font-size:14px;color:var(--mute);margin-top:20px}
 @media(prefers-reduced-motion:no-preference){.live .big{transition:color .3s}.bar div{transition:width .4s}}
@@ -206,29 +207,49 @@ const DAYS={2:[['Ponedjeljak','fa'],['Četvrtak','fb']],3:[['Ponedjeljak','noge'
 const GOAL={mrs:{n:'Mršavljenje',sets:3,reps:15,rest:40,sec:30},zat:{n:'Zatezanje',sets:3,reps:12,rest:60,sec:30},sna:{n:'Snaga',sets:4,reps:8,rest:90,sec:30},kon:{n:'Kondicija',sets:3,reps:15,rest:30,sec:40}};
 const LVL={1:'Početnik',2:'Srednji',3:'Napredni'};
 const LOC={kuca:['0'],buc:['0','b'],ter:['0','b','t']};
+EX.push(
+ {n:'Razvlačenje trake',g:'vuc',eq:'r',d:1,st:[],o:'Drži traku ispred sebe u visini ramena, ruke ispružene, i razvlači je u stranu dok ne dodirne grudi.',s:'Skupi lopatice, ramena drži dolje.'},
+ {n:'Veslanje sa trakom',g:'vuc',eq:'r',d:1,st:[],o:'Sjedi ispruženih nogu, traku zakači oko stopala i vuci krajeve ka stomaku.',s:'Leđa uspravna, laktovi uz tijelo.'},
+ {n:'Čučanj sa trakom',g:'noge',eq:'r',d:2,st:['koljena'],o:'Stani na traku, krajeve drži kod ramena i radi čučanj.',s:'Traka najviše zateže na vrhu, ustani do kraja.'},
+ {n:'Bočni hod sa trakom',g:'noge',eq:'r',d:1,st:[],o:'Traka iznad koljena, blago čučni i hodaj bočno nekoliko koraka lijevo pa desno.',s:'Koljena stalno guraj ka van.'},
+ {n:'Potisak trake iznad glave',g:'gur',eq:'r',d:1,st:['ramena'],o:'Stani na traku, krajeve drži kod ramena i guraj ih iznad glave.',s:'Stomak stegnut, ne izvijaj leđa.'},
+ {n:'Visenje na šipci',g:'core',eq:'p',d:1,t:1,st:['ramena'],o:'Uhvati šipku nešto šire od ramena i visi, ramena lagano aktivna.',s:'Odlično za hvat, ramena i kičmu.'},
+ {n:'Podizanje koljena u visu',g:'core',eq:'p',d:2,st:[],o:'Visi na šipci i podiži koljena ka grudima, pa ih polako spusti.',s:'Bez ljuljanja, radi stomakom.'},
+ {n:'Negativni zgibovi',g:'vuc',eq:'p',d:2,st:['ramena'],o:'Sa stolice dođi u položaj da je brada iznad šipke, pa se spuštaj što sporije, 3 do 5 sekundi.',s:'Najbolji put do prvog pravog zgiba.'},
+ {n:'Zgibovi',g:'vuc',eq:'p',d:3,st:['ramena'],o:'Iz visa povuci se dok brada ne pređe šipku, pa se kontrolisano spusti.',s:'Bez ljuljanja, vuci laktovima nadolje.'}
+);
+const eqSet=p=>p.loc=='ter'?['0','b','t','r','p']:p.loc=='buc'?['0','b']:['0'].concat(p.eq||[]);
+const DAILY=[['Ponedjeljak','dn'],['Utorak','dg'],['Srijeda','dk'],['Četvrtak','df'],['Petak','dn'],['Subota','dg'],['Nedjelja','dl']];
+Object.assign(T,{dn:{n:'Noge i zadnjica',s:['noge','noge','core','noge','kar'],x:'noge'},dg:{n:'Gornji dio tijela',s:['gur','vuc','gur','vuc','core'],x:'core'},dk:{n:'Kardio i stomak',s:['kar','core','kar','noge','core'],x:'kar'},df:{n:'Cijelo tijelo',s:['noge','gur','vuc','core','kar'],x:'noge'},dl:{n:'Lagani dan',s:['core','vuc','noge','core','core'],x:'vuc'}});
+const isDaily=p=>p&&p.mode=='dnev';
+const daysOf=p=>isDaily(p)?DAILY:DAYS[p.days];
+const ckey=p=>isDaily(p)?'d'+(p.min||20):String(p.days);
+const normP=p=>{p=JSON.parse(JSON.stringify(p));if(p.loc=='buc'){p.loc='kuca';p.eq=['b']}p.eq=p.eq||[];p.mode=p.mode||'klas';p.min=p.min||20;return p};
+
 
 const bmi=p=>p.w/((p.h/100)**2);
 const bmiTxt=b=>b<18.5?'ispod normale':b<25?'normalna težina':b<30?'povećana težina':'gojaznost';
 const week=()=>S.start?Math.floor((Date.now()-new Date(S.start))/6048e5)+1:1;
 
-function allowedEx(p){const low=bmi(p)>=30||p.age>=55||p.prob.includes('koljena'),lvl=+p.lvl;return e=>LOC[p.loc].includes(e.eq)&&e.d<=lvl&&!(low&&e.hi)&&!e.st.some(s=>p.prob.includes(s))}
+function allowedEx(p){const low=bmi(p)>=30||p.age>=55||p.prob.includes('koljena'),lvl=+p.lvl;const Q=eqSet(p);return e=>Q.includes(e.eq)&&e.d<=lvl&&!(low&&e.hi)&&!e.st.some(s=>p.prob.includes(s))}
 function poolFor(p,g){const ok=allowedEx(p);let c=EX.filter(e=>e.g==g&&ok(e));
- if(!c.length)c=EX.filter(e=>e.g==g&&!e.hi&&!e.st.length&&LOC[p.loc].includes(e.eq));
+ if(!c.length)c=EX.filter(e=>e.g==g&&!e.hi&&!e.st.length&&eqSet(p).includes(e.eq));
  return c.sort((a,b)=>(b.d-a.d)||(b.eq>a.eq?1:-1))}
 function build(p,raw,nb){
  const lvl=+p.lvl,cnt={};
  const G=GOAL[p.goal],bonus=nb?0:Math.min(3,Math.floor(qualW()/2)),adj=nb?0:(S.adj||0);
  const sets=Math.max(2,G.sets-(lvl==1?1:0));
- const dz=e=>{const sec=e.t?Math.max(15,G.sec+(lvl==1?-10:lvl==3?15:0)+bonus*5+adj*5):0;return Object.assign({},e,{sets:e.g=='kar'?Math.min(sets,3):sets,reps:e.t?0:Math.max(5,G.reps+bonus*2+adj*2),sec})};
- return DAYS[p.days].map(([dn,k],di)=>{
+ const D=isDaily(p),R=p.min==30?4:3,DS=p.min==30?45:40;
+ const dz=e=>{if(D)return Object.assign({},e,{t:1,sets:R,reps:0,sec:Math.max(20,DS+(lvl==1?-5:lvl==3?5:0)+bonus*5+adj*5)});const sec=e.t?Math.max(15,G.sec+(lvl==1?-10:lvl==3?15:0)+bonus*5+adj*5):0;return Object.assign({},e,{sets:e.g=='kar'?Math.min(sets,3):sets,reps:e.t?0:Math.max(5,G.reps+bonus*2+adj*2),sec})};
+ return daysOf(p).map(([dn,k],di)=>{
   const used=new Set(),slots=T[k].s.slice();
-  if((p.goal=='mrs'||p.goal=='kon')&&k!='kar')slots.push('kar');
+  if(D){if(p.min==30)slots.push(T[k].x)}else if((p.goal=='mrs'||p.goal=='kon')&&k!='kar')slots.push('kar');
   const rec=slots.map(g=>{const c=poolFor(p,g);let i=cnt[g]||0,e,tries=0;
    do{e=c[i%c.length];i++;tries++}while(used.has(e.n)&&tries<c.length);
    cnt[g]=i;used.add(e.n);return e});
-  const cu=!raw&&S.custom&&S.custom[p.days]&&S.custom[p.days][di];
+  const cu=!raw&&S.custom&&S.custom[ckey(p)]&&S.custom[ckey(p)][di];
   const list=cu?cu.map(n=>EX.find(e=>e.n==n)).filter(Boolean):rec;
-  return {dn,name:T[k].n,ex:(list.length?list:rec).map(dz),rec:rec.map(e=>e.n),slots,custom:!!(cu&&list.length),rest:G.rest};
+  return {dn,name:T[k].n,ex:(list.length?list:rec).map(dz),rec:rec.map(e=>e.n),slots,custom:!!(cu&&list.length),rest:D?(p.min==30?15:20):G.rest};
  });
 }
 const dose=e=>e.sets+' × '+(e.t?e.sec+' s':e.reps+(e.g=='noge'&&/Iskorak|jednoj/.test(e.n)?' po nozi':''));
@@ -244,7 +265,7 @@ $('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)
 function header(){
  const p=S.profile;
  $('#ttl').textContent=p&&p.name?'Trening za '+p.name:'Moj trening';
- $('#sub').textContent=p?GOAL[p.goal].n+' · '+LVL[p.lvl]+' · '+p.days+' dana nedjeljno':'Program vježbi napravljen po tvojim mjerama';
+ $('#sub').textContent=p?GOAL[p.goal].n+' · '+LVL[p.lvl]+' · '+(isDaily(p)?'svaki dan '+(p.min||20)+' min':p.days+' dana nedjeljno'):'Program vježbi napravljen po tvojim mjerama';
  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));
 }
 
@@ -269,7 +290,7 @@ function bindRemind(){
  const t=$('#rmtest');if(t)t.addEventListener('click',async()=>{try{const reg=swReg||await navigator.serviceWorker.ready;await reg.showNotification('Moj trening',{body:'Ovako izgleda podsjetnik na dan treninga.',icon:'icon-192.png'})}catch(e){$('#rmmsg').textContent='Obavještenje nije prikazano. Provjeri dozvole.'}});
 }
 function vPro(){
- const p=S.profile||{name:'',w:'',h:'',age:'',goal:'zat',lvl:'1',loc:'kuca',days:3,prob:[]};
+ const p=normP(S.profile||{name:'',w:'',h:'',age:'',goal:'zat',lvl:'1',loc:'kuca',days:3,prob:[]});
  const chips=(k,opts,multi)=>'<div class="chips" data-k="'+k+'"'+(multi?' data-m="1"':'')+'>'+opts.map(([v,l])=>'<button type="button" class="chip'+((multi?p[k].includes(v):String(p[k])==String(v))?' on':'')+'" data-v="'+v+'">'+l+'</button>').join('')+'</div>';
  return '<div class="card"><h2>Podešavanja</h2><label>Tema aplikacije</label><div class="chips" id="skin" role="group" aria-label="Tema"><button type="button" class="chip" data-s="m">Muška</button><button type="button" class="chip" data-s="f">Ženska (roza)</button></div><label>Uputstva za vježbe</label><div class="chips" id="hint"><button type="button" class="chip'+(S.hideHow?'':' on')+'" data-h="0">Prikaži</button><button type="button" class="chip'+(S.hideHow?' on':'')+'" data-h="1">Sakrij</button></div><p class="mute" style="margin-bottom:0">Sakrij kad naučiš vježbe: nestaju animacije, opisi i linkovi za video. Kod biranja vježbi animacije ostaju.</p></div>'+(uid?vRemind():'')+(uid?'<div class="card"><h3>Nalog</h3><p class="mute" id="acc"></p><button class="btn ghost" id="lo" type="button">Odjavi se</button></div>':'')+'<form class="card" id="f"><h2>'+(S.profile?'Tvoji podaci':'Hajde da počnemo')+'</h2><p class="mute">Na osnovu ovoga pravim nedjeljni plan. Sve se čuva na tvom nalogu.</p>'+
  '<label for="nm">Ime (nije obavezno)</label><input id="nm" value="'+esc(p.name)+'" autocomplete="given-name">'+
@@ -278,15 +299,19 @@ function vPro(){
  '<div><label for="ag">Godine</label><input id="ag" type="number" inputmode="numeric" min="14" max="90" required value="'+esc(p.age)+'"></div></div>'+
  '<label>Cilj</label>'+chips('goal',Object.entries(GOAL).map(([k,v])=>[k,v.n]))+
  '<label>Nivo</label>'+chips('lvl',Object.entries(LVL))+
- '<label>Gdje treniraš</label>'+chips('loc',[['kuca','Kod kuće, bez opreme'],['buc','Kod kuće sa bućicama'],['ter','Teretana']])+
- '<label>Dana nedjeljno</label>'+chips('days',[[2,'2'],[3,'3'],[4,'4'],[5,'5']])+
+ '<label>Način treninga</label>'+chips('mode',[['klas','Klasični, 2–5 dana nedjeljno'],['dnev','Dnevni, svaki dan kratko']])+
+ '<div id="f_days"'+(p.mode=='dnev'?' hidden':'')+'><label>Dana nedjeljno</label>'+chips('days',[[2,'2'],[3,'3'],[4,'4'],[5,'5']])+'</div>'+
+ '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'><label>Koliko traje dnevni trening</label>'+chips('min',[[20,'20 min'],[30,'30 min']])+'<p class="mute" style="margin:6px 0 0">Svaki dan drugi dio tijela, vježbe na vrijeme sa kratkim pauzama. Nedjelja je lakši dan.</p></div>'+
+ '<label>Gdje treniraš</label>'+chips('loc',[['kuca','Kod kuće'],['ter','Teretana']])+
+ '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Šta imaš kod kuće (ništa = vježbe bez opreme)</label>'+chips('eq',[['b','Bućice'],['r','Elastična traka'],['p','Šipka za zgibove']],1)+'</div>'+
  '<label>Problemi (izbaciću vježbe koje ih opterećuju)</label>'+chips('prob',[['koljena','Koljena'],['leđa','Leđa'],['ramena','Ramena']],1)+
  '<p id="err" class="mute" style="color:var(--red)"></p><button class="btn">'+(S.profile?'Sačuvaj i osvježi plan':'Napravi moj plan')+'</button></form>'+
  (S.profile?'<div class="card"><h3>Kopija podataka</h3><p class="mute">Kopiraj sve podatke i sačuvaj ih npr. u Bilješke na telefonu. Kasnije ih zalijepi ovdje da vratiš sve kako je bilo.</p><div class="acts" style="justify-content:flex-start"><button type="button" class="btn ghost" id="bkc">Kopiraj podatke</button><button type="button" class="btn ghost" id="bki">Učitaj kopiju</button></div><textarea id="bkt" rows="4" style="display:none;width:100%;margin-top:10px;font:13px monospace;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)"></textarea><button type="button" class="btn" id="bkl" style="display:none;margin-top:8px">Vrati podatke iz kopije</button><p class="mute" id="bkm"></p></div>':'')+
  (S.profile?'<div class="card"><h3>Kreni ispočetka</h3><p class="mute">Briše plan, odrađene treninge, dnevnik i mjere. Prvo napravi kopiju podataka.</p><button class="btn ghost" id="rst">Obriši sve</button><span id="cf"></span></div>':'');
 }
 function bindPro(){
- const draft=S.profile?JSON.parse(JSON.stringify(S.profile)):{goal:'zat',lvl:'1',loc:'kuca',days:3,prob:[]};
+ const draft=normP(S.profile||{goal:'zat',lvl:'1',loc:'kuca',days:3,prob:[]});
+ const vis=()=>{$('#f_days').hidden=draft.mode=='dnev';$('#f_min').hidden=draft.mode!='dnev';$('#f_eq').hidden=draft.loc=='ter'};
  bindSkin();applySkin();
  {const h=$('#hint');if(h)h.addEventListener('click',e=>{const b=e.target.closest('[data-h]');if(!b)return;S.hideHow=b.dataset.h=='1';if(!S.hideHow)delete S.hideHow;save();render()})}
  
@@ -294,7 +319,7 @@ function bindPro(){
  if($('#lo')){$('#acc').textContent='Prijavljen: '+(auth.currentUser&&auth.currentUser.email||'');$('#lo').addEventListener('click',()=>{stopTick();W=null;signOut(auth)})}
  document.querySelectorAll('.chips[data-k]').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const k=g.dataset.k,v=b.dataset.v;
   if(g.dataset.m){const a=draft[k];const i=a.indexOf(v);i<0?a.push(v):a.splice(i,1);b.classList.toggle('on')}
-  else{draft[k]=k=='days'?+v:v;g.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c==b))}}));
+  else{draft[k]=k=='days'||k=='min'?+v:v;g.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c==b))}vis()}));
  $('#f').addEventListener('submit',e=>{e.preventDefault();
   const w=+$('#w').value,h=+$('#h').value,age=+$('#ag').value;
   if(!(w>=30&&w<=250&&h>=120&&h<=220&&age>=14&&age<=90)){$('#err').textContent='Provjeri težinu, visinu i godine.';return}
@@ -318,7 +343,7 @@ function bindPro(){
 function addW(kg){const d=today();S.weights=S.weights.filter(x=>x.d!=d);S.weights.push({d,kg});S.weights.sort((a,b)=>a.d<b.d?-1:1);if(S.profile)S.profile.w=kg}
 
 function thisWeek(){return S.done.filter(x=>x.d>=wkStart(0))}
-const DIDX={'Ponedjeljak':0,'Utorak':1,'Srijeda':2,'Četvrtak':3,'Petak':4,'Subota':5};
+const DIDX={'Ponedjeljak':0,'Utorak':1,'Srijeda':2,'Četvrtak':3,'Petak':4,'Subota':5,'Nedjelja':6};
 const stat=(b,s)=>'<div class="stat"><b>'+b+'</b><span>'+s+'</span></div>';
 function setMark(wk,d,j,v,toggle){S.marks=S.marks||{};const old=wkStart(-12);for(const k in S.marks)if(k<old)delete S.marks[k];
  const w=S.marks[wk]=S.marks[wk]||{},dm=w[d]=w[d]||{};if(toggle&&dm[j]==v)delete dm[j];else dm[j]=v;save()}
@@ -429,6 +454,19 @@ Object.assign(MOT,{
 });
 Object.assign(MAPM,{'Istezanje prednje lože':['quad','standing quad stretch'],'Istezanje zadnje lože':['ham','seated hamstring stretch'],'Istezanje kukova':['hipf','kneeling hip flexor stretch'],'Istezanje ramena':['arm','cross body shoulder stretch'],'Položaj djeteta':['child',"child's pose stretch"]});
 
+
+Object.assign(PR_,{pbar:'<path d="M56 8h88" stroke-width="4"/><path d="M62 8V0M138 8V0"/>'});
+const HG={w:[100,10],e:[100,26],s:[100,42],h:[105,33],p:[100,78],k:[100,104],a:[100,126],t:[105,128]};
+Object.assign(MOT,{
+ pa:{f:[pz({e:[94,54],w:[98,52],e2:[106,54],w2:[102,52]}),pz({e:[82,48],w:[66,48],e2:[118,48],w2:[134,48]})]},
+ side:{f:[pz({p:[100,82],s:[100,46],h:[100,34],e:[92,62],w:[94,76],e2:[108,62],w2:[106,76],k:[95,106],a:[93,130],t:[89,130],k2:[105,106],a2:[107,130],t2:[111,130]}),pz({p:[100,82],s:[100,46],h:[100,34],e:[92,62],w:[94,76],e2:[108,62],w2:[106,76],k:[90,106],a:[82,130],t:[78,130],k2:[110,106],a2:[118,130],t2:[122,130]})],d:1400},
+ hang:{f:[pz(HG),pz(HG,{s:[100,40],h:[105,31],e:[100,25]})],pr:'pbar',d:3000},
+ pull:{f:[pz(HG),pz({w:[100,10],e:[92,30],s:[100,22],h:[105,10],p:[100,58],k:[102,84],a:[100,108],t:[105,110]})],pr:'pbar',d:2600},
+ kr:{f:[pz(HG),pz(HG,{k:[124,76],a:[124,100],t:[130,100],p:[102,78]})],pr:'pbar'}
+});
+Object.assign(MAPM,{'Razvlačenje trake':['pa','band pull apart'],'Veslanje sa trakom':['crow','seated resistance band row'],'Čučanj sa trakom':['sq','resistance band squat'],'Bočni hod sa trakom':['side','lateral band walk'],'Potisak trake iznad glave':['ohp','resistance band overhead press'],'Visenje na šipci':['hang','dead hang'],'Podizanje koljena u visu':['kr','hanging knee raise'],'Negativni zgibovi':['pull','negative pull ups'],'Zgibovi':['pull','pull ups proper form']});
+MAPMd['Potisak trake iznad glave']=0;
+
 const mkBtns=(key,v)=>'<div class="mk"><button class="mb ok'+(v=='ok'?' on':'')+'" data-mk="'+key+'|ok" aria-label="Odrađeno" aria-pressed="'+(v=='ok')+'">✓</button><button class="mb no'+(v=='no'?' on':'')+'" data-mk="'+key+'|no" aria-label="Nije odrađeno" aria-pressed="'+(v=='no')+'">✗</button></div>';
 const exLi=(e,key,v)=>'<li class="'+(v||'')+'">'+anim(e.n,'thumb')+'<div><b>'+e.n+'</b><br><span class="dose">'+dose(e)+'</span>'+(sugg(e)?'<br><span class="sug">'+sugg(e)+'</span>':'')+'</div>'+mkBtns(key,v)+'<details><summary>Kako se radi</summary>'+anim(e.n,'demo')+e.o+' <br><strong>Savjet:</strong> '+e.s+'<br>'+ytLink(e.n)+'</details></li>';
 function vWeek(sm){
@@ -472,7 +510,7 @@ function bindEdit(){
  on('[data-add]',b=>{if(draft.length<8){draft.push(b.dataset.add);render()}});
  on('#erec',()=>{draft=build(S.profile,1)[editDay].rec.slice();render()});
  on('#ecan',()=>{editDay=null;render()});
- on('#esave',()=>{const p=S.profile,rec=build(p,1)[editDay].rec;S.custom=S.custom||{};const c=S.custom[p.days]=S.custom[p.days]||{};
+ on('#esave',()=>{const p=S.profile,rec=build(p,1)[editDay].rec;S.custom=S.custom||{};const c=S.custom[ckey(p)]=S.custom[ckey(p)]||{};
   if(draft.join('|')==rec.join('|'))delete c[editDay];else c[editDay]=draft.slice();
   const wm=(S.marks||{})[wkStart(0)];if(wm)delete wm[editDay];
   const d=editDay;editDay=null;save();render();const cards=document.querySelectorAll('[data-go="'+d+'"]');if(cards[0])cards[0].closest('.card').scrollIntoView({block:'start'})});
@@ -578,7 +616,7 @@ function vPlan(){
   return '<div class="card"><div class="day"><h2 style="margin:0">'+d.dn+'</h2><span class="tag'+(all?' ok':'')+'">'+(all?'✓ Sve odrađeno':d.custom?'Tvoj izbor':d.name)+'</span></div><p class="mute" style="margin:0">'+dinfo(wk,i,d)+' · odmor između serija '+d.rest+' s · označi ✓ ili ✗ za svaku vježbu</p><ol class="ex">'+
   d.ex.slice(0,bn).map((e,j)=>exLi(e,wk+'|'+i+'|'+j,dm[j])).join('')+(bn<d.ex.length?'</ol><h3 class="gh">Nadoknada iz prošle nedjelje</h3><ol class="ex">'+d.ex.slice(bn).map((e,j)=>exLi(e,wk+'|'+i+'|'+(bn+j),dm[bn+j])).join(''):'')+
   '</ol><div class="acts" style="justify-content:flex-start;margin-top:0"><button class="btn" data-go="'+i+'">Počni trening</button><button class="btn ghost" data-edit="'+i+'">Izaberi vježbe</button></div></div>'}).join('')+
- '<p class="rest">Ostali dani su za odmor, šetnju ili lagano istezanje. Mišići jačaju dok se odmaraju.</p>'+
+ (isDaily(p)?'<p class="rest">Svaki trening traje oko '+(p.min||20)+' min sa zagrijavanjem i istezanjem. Ako je neki dan preteško, uradi kratki trening ili samo istezanje.</p>':'<p class="rest">Ostali dani su za odmor, šetnju ili lagano istezanje. Mišići jačaju dok se odmaraju.</p>')+
  '<p class="note">Ovo je opšti program, nije savjet ljekara. Ako postoje zdravstveni problemi, trudnoća ili bol tokom vježbe, prvo se posavjetuj sa ljekarom.</p>';
 }
 function bindPlan(){
