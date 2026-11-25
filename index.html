@@ -311,6 +311,9 @@ details[open]>*:not(summary){animation:fin .14s ease-out}
 
 /* roze tema: propušteno u roze nijansi umjesto narandžaste */
 :root[data-skin=f]{--no:light-dark(#b0124f,#ff5c9a)}
+
+.wbar .el{font:700 20px "Barlow Condensed",sans-serif;font-variant-numeric:tabular-nums;color:var(--red);white-space:nowrap;min-width:58px;text-align:right}
+.wbar .el small{font-size:14px;color:var(--mute);font-weight:600}
 </style>
 </head>
 <body>
@@ -899,7 +902,7 @@ function nextTr(){const td=today();let best=null;
  return best}
 function quickDay(){const n=nextTr(),plan=build(S.profile),d=n&&n.off==0?n.d:plan[0];
  return {name:'Kratki trening',rest:20,ex:d.ex.slice(0,4).map(e=>Object.assign({},e,{t:1,sec:40,sets:2}))}}
-function startSpecial(mode){wake();const d=mode=='str'?strDay():quickDay();W={k:-1,mode,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go')}
+function startSpecial(mode){wake();wT0=Date.now();wEnd=null;const d=mode=='str'?strDay():quickDay();W={k:-1,mode,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go')}
 let openDay;
 const pl=(n,a,b,c)=>{const t=n%10,h=n%100;return n+' '+(t==1&&h!=11?a:t>=2&&t<=4&&(h<12||h>14)?b:c)};
 const nEx=n=>pl(n,'vježba','vježbe','vježbi');
@@ -951,11 +954,15 @@ let wl=null;async function wake(){try{if('wakeLock' in navigator&&!wl){wl=await 
 function unwake(){try{wl&&wl.release()}catch(e){}wl=null}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&W&&W.ph!='done')wake()});
 function warmDay(){return {name:'Zagrijavanje',rest:5,ex:[['Kruženje ramenima','Kruži ramenima naprijed pa nazad, polako.'],['Kruženje kukovima','Ruke na kukovima, kruži kukovima u oba smjera.'],['Marširanje u mjestu','Marširaj podižući koljena, mašući rukama.'],['Lagani čučnjevi','Polako, samo do pola, da se zagriju koljena.']].map(([n,o])=>({n,o,s:'Lagano, bez naprezanja.',g:'warm',eq:'0',t:1,sec:30,sets:1,st:[]}))}}
-function startW(k,noWarm){wake();if(S.autoWS&&!noWarm){W={k:-1,mode:'warm',next:k,d:warmDay(),i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go');return}const d=withMake(build(S.profile))[k];W={k,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go')}
+let wT0=null,wEnd=null;
+const fmtE=ms=>{const t=Math.max(0,Math.floor(ms/1000)),h=Math.floor(t/3600),m=Math.floor(t%3600/60),x=t%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
+const elTxt=()=>{const e=fmtE((wEnd||Date.now())-(wT0||Date.now())),p=S.profile;return isDaily(p)&&W&&W.mode!='str'?e+' <small>/ '+(p.min||20)+':00</small>':e};
+setInterval(()=>{const el=document.getElementById('elapsed');if(el&&wT0&&!wEnd)el.innerHTML=elTxt()},500);
+function startW(k,noWarm){wake();if(!noWarm||!wT0){wT0=Date.now();wEnd=null}if(S.autoWS&&!noWarm){W={k:-1,mode:'warm',next:k,d:warmDay(),i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go');return}const d=withMake(build(S.profile))[k];W={k,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go')}
 function stopTick(){clearInterval(tick);tick=null}
 function run(sec,ph){stopTick();W.ph=ph;W.t=sec;W.tt=sec;W.end=Date.now()+sec*1000;render();tick=setInterval(()=>{const nt=Math.max(0,Math.ceil((W.end-Date.now())/1000));if(nt===W.t)return;W.t=nt;if(W.t>0&&W.t<=3)tone(660,.08);if(W.t<=0){stopTick();beep();if(ph=='rest'){W.ph='ready';const ne=W.d.ex[W.i];if(S.auto!==false&&ne&&ne.t){run(ne.sec,'work');return}}else{W.rec=W.rec||{};(W.rec[W.i]=W.rec[W.i]||[]).push({r:sec});afterSet()}render();return}const el=$('#clock');if(el)el.textContent=fmt(W.t);const rg=$('#ring');if(rg)rg.style.setProperty('--p',W.t/W.tt)},250)}
 const fmt=s=>s>=60?Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):String(s);
-function finishW(){if(W&&W.mode=='warm'){const k=W.next;stopTick();W=null;startW(k,1);return}stopTick();unwake();W.ph='done';if(W.k>=0)S.done.push({d:today(),k:W.k});if(W.mode=='quick'){S.quick=S.quick||{};S.quick[today()]=1}save();render()}
+function finishW(){if(W&&W.mode=='warm'){const k=W.next;stopTick();W=null;startW(k,1);return}stopTick();unwake();wEnd=Date.now();W.ph='done';if(W.k>=0)S.done.push({d:today(),k:W.k});if(W.mode=='quick'){S.quick=S.quick||{};S.quick[today()]=1}save();render()}
 function cNext(){const L=W.d.ex.length,R=Math.max(...W.d.ex.map(x=>x.sets));let i=W.i,r=W.set;
  for(let g=0;g<=L*R;g++){i++;if(i>=L){i=0;r++}if(r>R)return finishW();if(!(W.sk||{})[i]&&r<=W.d.ex[i].sets){const nr=r!=W.set;W.i=i;W.set=r;W.nr=nr;return run(nr?Math.max(20,60+(+S.restAdj||0)*2):W.d.rest,'rest')}}
  finishW()}
@@ -970,7 +977,7 @@ function vGo(){
  if(!S.profile)return vPro();
  if(!W)return '<div class="card"><h2>Izaberi trening</h2><p class="mute">Na kartici Plan klikni „Počni trening” kod dana koji želiš.</p><button class="btn" id="toplan">Idi na plan</button></div>';
  const d=W.d,e=d.ex[W.i],tot=d.ex.reduce((a,x)=>a+x.sets,0),doneN=d.circ?d.ex.reduce((a,x,j)=>a+Math.min(x.sets,W.set-1+(j<W.i?1:0)),0):d.ex.slice(0,W.i).reduce((a,x)=>a+x.sets,0)+W.set-1;
- if(W.ph=='done')return '<div class="card live"><h2>'+(W.mode=='str'?'Istezanje završeno!':'Bravo, trening završen!')+'</h2><p class="mute">'+d.name+' · '+nEx(d.ex.length)+' · '+pl(tot,'serija','serije','serija')+'</p>'+
+ if(W.ph=='done')return '<div class="card live"><h2>'+(W.mode=='str'?'Istezanje završeno!':'Bravo, trening završen!')+'</h2><p class="mute">'+d.name+' · trajanje '+fmtE((wEnd||Date.now())-(wT0||Date.now()))+' · '+nEx(d.ex.length)+' · '+pl(tot,'serija','serije','serija')+'</p>'+
  (W.mode=='str'?'':W.rated!==undefined?'<p>'+['Važi, sledeći treninzi su malo lakši.','Super, ostaje ovako.','Važi, sledeći treninzi su malo teži.'][W.rated+1]+'</p>':'<p><b>Kakav je bio trening?</b></p><div class="chips" style="justify-content:center"><button class="chip" data-rate="1">Lako</button><button class="chip" data-rate="0">Taman</button><button class="chip" data-rate="-1">Teško</button></div>')+
  '<div class="acts">'+(W.mode=='str'?'':'<button class="btn blue" id="strgo">Istezanje · 3 min</button>')+'<button class="btn" id="toplan">Nazad na plan</button></div></div>';
  const next=e;
@@ -979,7 +986,7 @@ function vGo(){
  else if(W.ph=='work')mid='<div class="ring" id="ring" style="--p:'+(W.t/(W.tt||1))+'"><div><div class="big" id="clock">'+fmt(W.t)+'</div><div class="lbl">radi</div></div></div><div class="acts"><button class="btn ghost" id="fin">Završi ranije</button></div>';
  else mid='<div class="ring" style="--p:1"><div><div class="big">'+(e.t?e.sec:e.reps)+'</div><div class="lbl">'+(e.t?'sekundi':'ponavljanja')+'</div></div></div>'+(sugg(e)?'<p class="sug">'+sugg(e)+'</p>':'')+
  (e.t||W.mode?'':'<div class="logrow"><label>Ponavljanja<input id="lr" type="number" inputmode="numeric" min="0" max="200" value="'+e.reps+'"></label>'+(isWt(e)?'<label>Težina (kg)<input id="lk" type="number" inputmode="decimal" min="0" max="300" step="0.5" value="'+(((W.rec||{})[W.i]||[]).slice(-1)[0]||{kg:sugKg(e)}).kg+'"></label>':'')+'</div>')+'<div class="acts">'+(e.t?'<button class="btn" id="tmr">Pokreni '+e.sec+' s</button>':'<button class="btn" id="fin">Serija gotova</button>')+'<button class="btn ghost" id="skx">Preskoči vježbu</button></div>';
- return '<div class="wbar"><button class="btn ghost" id="wback" type="button">‹ Plan</button><b>'+esc(d.name)+'</b><span></span></div><div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">'+(d.circ?'Krug':'Serija')+' '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
+ return '<div class="wbar"><button class="btn ghost" id="wback" type="button">‹ Plan</button><b>'+esc(d.name)+'</b><span class="el" id="elapsed" aria-label="Proteklo vrijeme">'+elTxt()+'</span></div><div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">'+(d.circ?'Krug':'Serija')+' '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
  '<div class="card howto"><h3>Kako se radi</h3><p>'+e.o+'</p><p><strong>Savjet:</strong> '+e.s+'</p><p>'+ytLink(e.n)+'</p></div><button class="btn ghost" id="quit">Prekini trening</button>';
 }
 function bindGo(){
@@ -991,7 +998,7 @@ function bindGo(){
   else if(e.t)R.push({r:W.ph=='work'?e.sec-W.t:e.sec});
   afterSet();render()});
  on('skx',()=>{stopTick();if(W.k>=0)setMark(wkStart(0),W.k,W.i,'no');if(W.d.circ){W.sk=W.sk||{};W.sk[W.i]=1;cNext()}else nextEx();render()});
- {const q=$('#quit');if(q)q.addEventListener('click',()=>{if(!q.dataset.sure){q.dataset.sure=1;q.textContent='Sigurno prekidaš? Dodirni ponovo';q.classList.add('warn');setTimeout(()=>{if(q.isConnected){delete q.dataset.sure;q.textContent='Prekini trening';q.classList.remove('warn')}},3000);return}stopTick();unwake();W=null;setTab('plan')})}
+ {const q=$('#quit');if(q)q.addEventListener('click',()=>{if(!q.dataset.sure){q.dataset.sure=1;q.textContent='Sigurno prekidaš? Dodirni ponovo';q.classList.add('warn');setTimeout(()=>{if(q.isConnected){delete q.dataset.sure;q.textContent='Prekini trening';q.classList.remove('warn')}},3000);return}stopTick();unwake();W=null;wT0=null;setTab('plan')})}
 }
 
 function vNap(){
