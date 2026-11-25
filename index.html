@@ -308,6 +308,9 @@ details[open]>*:not(summary){animation:fin .14s ease-out}
 
 .fade.sl>*{animation-name:fromr!important}.fade.sr>*{animation-name:froml!important}
 @keyframes fromr{from{opacity:0;transform:translateX(24px)}}@keyframes froml{from{opacity:0;transform:translateX(-24px)}}
+
+/* roze tema: propušteno u roze nijansi umjesto narandžaste */
+:root[data-skin=f]{--no:light-dark(#b0124f,#ff5c9a)}
 </style>
 </head>
 <body>
@@ -488,7 +491,7 @@ function build(p,raw,nb){
 const dose=e=>e.sets+' × '+(e.t?e.sec+' s':e.reps+(e.g=='noge'&&/Iskorak|jednoj/.test(e.n)?' po nozi':''));
 
 let skin='m';try{skin=localStorage.getItem('trening-skin')||'m'}catch(e){}
-const applySkin=()=>{document.documentElement.dataset.skin=skin;{let sc=null;try{sc=localStorage.getItem('trening-scheme')}catch(e){}sc=S.scheme||sc;const R=document.documentElement;if(sc=='light'||sc=='dark'){R.dataset.theme=sc;R.dataset.mine=1}else if(R.dataset.mine){delete R.dataset.theme;delete R.dataset.mine}}document.querySelectorAll('#skin button').forEach(b=>b.classList.toggle('on',b.dataset.s==skin))};
+const applySkin=()=>{document.documentElement.dataset.skin=skin;{const tc=document.querySelector('meta[name=theme-color]');if(tc)tc.setAttribute('content',skin=='f'?'#d6407a':'#d9411f')}{let sc=null;try{sc=localStorage.getItem('trening-scheme')}catch(e){}sc=S.scheme||sc;const R=document.documentElement;if(sc=='light'||sc=='dark'){R.dataset.theme=sc;R.dataset.mine=1}else if(R.dataset.mine){delete R.dataset.theme;delete R.dataset.mine}}document.querySelectorAll('#skin button').forEach(b=>b.classList.toggle('on',b.dataset.s==skin))};
 function bindSkin(){$('#skin').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;skin=b.dataset.s;try{localStorage.setItem('trening-skin',skin)}catch(e){}applySkin();if(uid){S.skin=skin;save()}})}
 applySkin();
 let tab='plan',W=null,tick=null;
@@ -874,7 +877,7 @@ function bindCal(){
 let QW=null;
 function qualW(){if(QW!==null)return QW;let n=0;if(S.start&&S.profile)for(let o=-1;o>=-26;o--){if(addD(wkStart(o),6)<S.start)break;const s=summ(o);if(s.total&&s.okp>=80)n++}return QW=n}
 function withMake(plan){const L=makeList();if(!L.length)return plan;const P=plan.map(d=>Object.assign({},d,{ex:d.ex.slice(),base:d.ex.length}));L.forEach((e,j)=>{const free=P.filter(d=>!d.ex.some(x=>x.n==e.n));if(!free.length)return;const d=free.reduce((a,b)=>b.ex.length-b.base<a.ex.length-a.base?b:a);d.ex.push(Object.assign({},e,{mk:1}))});return P}
-const isWt=e=>e.eq=='b'||e.eq=='t';
+const isWt=e=>e.eq=='b'||e.eq=='t'||e.eq=='k';
 function lastLog(e){const L=(S.log||{})[e.n];return L&&L.length?L[L.length-1]:null}
 function sugKg(e){const l=lastLog(e);if(!l)return '';const kg=Math.max(0,...l.s.map(x=>+x.kg||0));if(!kg)return '';const st=+S.kgStep||(kg<10?1:2.5);return l.s.every(x=>x.r>=l.tg)?Math.round((kg+st)*10)/10:kg}
 function sugg(e){const l=lastLog(e);if(!l)return '';const kg=Math.max(0,...l.s.map(x=>+x.kg||0));
@@ -957,9 +960,9 @@ function cNext(){const L=W.d.ex.length,R=Math.max(...W.d.ex.map(x=>x.sets));let 
  for(let g=0;g<=L*R;g++){i++;if(i>=L){i=0;r++}if(r>R)return finishW();if(!(W.sk||{})[i]&&r<=W.d.ex[i].sets){const nr=r!=W.set;W.i=i;W.set=r;W.nr=nr;return run(nr?Math.max(20,60+(+S.restAdj||0)*2):W.d.rest,'rest')}}
  finishW()}
 function afterSet(){const e=W.d.ex[W.i];
- if(W.d.circ){if(W.set>=e.sets){if(W.k>=0)setMark(wkStart(0),W.k,W.i,'ok');commitLog(W.i)}cNext();return}
+ if(W.d.circ){if(W.set>=e.sets){commitLog(W.i);if(W.k>=0)setMark(wkStart(0),W.k,W.i,'ok')}cNext();return}
  if(W.set<e.sets){W.set++;run(W.d.rest,'rest');return}
- if(W.k>=0)setMark(wkStart(0),W.k,W.i,'ok');commitLog(W.i);nextEx()}
+ commitLog(W.i);if(W.k>=0)setMark(wkStart(0),W.k,W.i,'ok');nextEx()}
 function nextEx(){
  if(W.i<W.d.ex.length-1){W.i++;W.set=1;run(W.d.rest,'rest');return}
  finishW()}
@@ -982,7 +985,7 @@ function vGo(){
 function bindGo(){
  const on=(id,f)=>{const b=$('#'+id);if(b)b.addEventListener('click',f)};
  on('toplan',()=>{W=null;setTab('plan')});on('wback',()=>setTab('plan'));on('strgo',()=>startSpecial('str'));
- document.querySelectorAll('[data-rate]').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.rate;S.adj=Math.max(-3,Math.min(3,(S.adj||0)+v));S.rates=(S.rates||[]).concat({d:today(),v}).slice(-30);W.rated=v;save();if(S.autoWS){startSpecial('str');return}render()}));on('skip',()=>{stopTick();W.ph='ready';render()});
+ document.querySelectorAll('[data-rate]').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.rate;S.adj=Math.max(-3,Math.min(3,(S.adj||0)+v));S.rates=(S.rates||[]).concat({d:today(),v}).slice(-30);W.rated=v;save();if(S.autoWS){startSpecial('str');return}render()}));on('skip',()=>{stopTick();const ne=W.d.ex[W.i];if(ne&&ne.t)run(ne.sec,'work');else{W.ph='ready';render()}});
  on('tmr',()=>run(W.d.ex[W.i].sec,'work'));on('fin',()=>{stopTick();const e=W.d.ex[W.i];W.rec=W.rec||{};const R=W.rec[W.i]=W.rec[W.i]||[];
   if(W.ph=='ready'&&!e.t){const r=+(($('#lr')||{}).value||e.reps),k=$('#lk')?+$('#lk').value||0:0;R.push(k?{r,kg:k}:{r})}
   else if(e.t)R.push({r:W.ph=='work'?e.sec-W.t:e.sec});
