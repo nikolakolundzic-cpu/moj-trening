@@ -314,6 +314,18 @@ details[open]>*:not(summary){animation:fin .14s ease-out}
 
 .wbar .el{font:700 20px "Barlow Condensed",sans-serif;font-variant-numeric:tabular-nums;color:var(--red);white-space:nowrap;min-width:58px;text-align:right}
 .wbar .el small{font-size:14px;color:var(--mute);font-weight:600}
+.pz{display:block;margin:-4px 0 10px auto;min-height:34px;padding:4px 14px;font-size:15px}
+.ring.paused{opacity:.75}.ring.paused .big{color:var(--mute)}
+.pgt{color:var(--red);font-weight:700}
+.pgc .bar{height:6px}
+.phcmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}.phcmp.one{grid-template-columns:1fr;max-width:260px;margin:0 auto}
+.phf{margin:0}.phf img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;display:block;background:var(--line,#0002)}
+.phf figcaption{text-align:center;font-weight:700;margin-top:6px;font-size:15px}.phf select{display:block;width:100%;margin-top:4px;padding:6px;font-size:14px}
+.phg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.pht{position:relative}.pht img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
+.pht span{position:absolute;left:4px;bottom:4px;font-size:11px;color:#fff;background:#0008;border-radius:5px;padding:1px 4px}
+.pht .x{position:absolute;top:2px;right:2px;background:#000a;color:#fff;border-radius:99px;min-width:24px;height:24px;padding:0 6px;font-size:13px;line-height:24px;border:0}
+.pht .x.sure{background:var(--no)}
 </style>
 </head>
 <body>
@@ -545,13 +557,16 @@ function vPro(){
   sr('Tajmer kreće sam',tg('auto',S.auto!==false))+
   sr('Zagrijavanje i istezanje',tg('autoWS',!!S.autoWS))+
   sr('Uputstva za vježbe',tg('hideHow',!S.hideHow))+
+  sr('Glasovno vođenje',tg('voice',!!S.voice))+
   pref('Zvuk','sound',[['on','Zvuk'],['vib','Vibracija'],['off','Bez']],'on')+
   pref('Pauze','restAdj',[['-15','Kraće'],['0','Normalno'],['15','Duže']],'0'),
-  'Tajmer sam kreće posle odmora. Zagrijavanje se pusti prije treninga, a istezanje posle. Zadnje 3 sekunde se čuje zvuk, a ekran se ne gasi.')+
+  'Tajmer sam kreće posle odmora. Zagrijavanje se pusti prije treninga, a istezanje posle. Zadnje 3 sekunde se čuje zvuk, a ekran se ne gasi. Glas najavljuje sledeću vježbu i kaže kad ostane 10 sekundi.')+
  grp('Napredovanje',
   pref('Brzina','prog',[['slow','Sporo'],['norm','Normalno'],['fast','Brzo']],'norm')+
   pref('Korak kg','kgStep',[['0','Auto'],['1','1'],['2','2'],['2.5','2,5']],'0'),
-  'Koliko brzo plan postaje teži i za koliko kg aplikacija predlaže da povećaš težinu.')+(uid?vRemind():'')+(uid&&isOwner()?'<div class="card"><h3>Pregled korisnika</h3><p class="mute">Vidiš samo anonimnu statistiku, bez imena, emaila i težine.</p><button class="btn ghost" type="button" id="ownl">Učitaj pregled</button><div id="ownv"></div></div>':'')+
+  'Koliko brzo plan postaje teži i za koliko kg aplikacija predlaže da povećaš težinu.')+
+ (S.profile?grp('Program sa ciljem',sr('Program','<div class="chips" id="gpc">'+[['','Bez']].concat(Object.entries(PGM).filter(([k,v])=>!v.eq||eqSet(S.profile).includes(v.eq)).map(([k,v])=>[k,v.n])).map(([k,t])=>'<button type="button" class="chip'+(((S.goalProg||{}).id||'')==k?' on':'')+'" data-gp="'+k+'">'+t+'</button>').join('')+'</div>'),
+  S.goalProg&&PGM[S.goalProg.id]?PGM[S.goalProg.id].n+': nedelja '+Math.min(pgWeek(),PGM[S.goalProg.id].w.length)+' od '+PGM[S.goalProg.id].w.length+'. Vježbe programa se dodaju u treninge.':'Izaberi cilj i aplikacija ga dodaje u tvoje treninge, nedelju po nedelju.'+(eqSet(S.profile).includes('p')?'':' Za „Prvi zgib” u opremi označi vratilo.')):'')+(uid?vRemind():'')+(uid&&isOwner()?'<div class="card"><h3>Pregled korisnika</h3><p class="mute">Vidiš samo anonimnu statistiku, bez imena, emaila i težine.</p><button class="btn ghost" type="button" id="ownl">Učitaj pregled</button><div id="ownv"></div></div>':'')+
  (uid?'<p class="ios-h">Nalog</p><div class="card" style="margin-top:0"><p class="mute" id="acc"></p>'+(auth.currentUser&&!auth.currentUser.emailVerified?'<div class="verif"><p style="margin:0 0 8px"><b>Email nije potvrđen.</b> Potvrda služi da niko drugi ne može koristiti tvoj email.</p><div class="acts" style="justify-content:flex-start;margin:0"><button class="btn" type="button" id="vsend">Pošalji link za potvrdu</button><button class="btn ghost" type="button" id="vdone">Potvrdio sam</button></div><p class="mute" id="vmsg" style="margin-bottom:0"></p></div>':'')+'<div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="lo" type="button">Odjavi se</button><button class="btn ghost warn" id="delacc" type="button">Obriši nalog</button></div><p class="mute" id="delmsg"></p><p class="mute" style="margin-bottom:0">Vlasniku aplikacije se šalje samo anonimna statistika: broj treninga, procenat po nedelji, cilj i način treninga. Bez imena, emaila, težine i mjera.</p></div>':'')+(S.profile?'<p class="ios-h">Profil</p><details class="card pf" style="margin-top:0"><summary><span><b>Tvoji podaci i plan</b><br><span class="mute">'+esc([p.name,p.w&&p.w+' kg',p.h&&p.h+' cm',p.age&&p.age+' god.',(GOAL[p.goal]||{}).n].filter(Boolean).join(' · '))+'</span></span><span class="chev" aria-hidden="true">›</span></summary><form id="f">':'<form class="card" id="f"><h2>Hajde da počnemo</h2><p class="mute">Na osnovu ovoga pravim nedeljni plan.</p>')+
  '<label for="nm">Ime</label><input id="nm" value="'+esc(p.name)+'" autocomplete="given-name">'+
  '<div class="row"><div><label for="w">Težina kg</label><input id="w" type="number" inputmode="decimal" min="30" max="250" step="0.1" required value="'+esc(p.w)+'"></div>'+
@@ -576,7 +591,8 @@ function bindPro(){
  const vis=()=>{$('#f_days').hidden=draft.mode=='dnev';$('#f_min').hidden=draft.mode!='dnev';$('#f_eq').hidden=draft.loc=='ter'};
  bindSkin();applySkin();
  document.querySelectorAll('[data-tg]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.tg;
-  if(k=='auto'){if(S.auto===false)delete S.auto;else S.auto=false}else if(k=='autoWS'){if(S.autoWS)delete S.autoWS;else S.autoWS=true}else if(k=='hideHow'){if(S.hideHow)delete S.hideHow;else S.hideHow=true}else return;save();render()}));
+  if(k=='auto'){if(S.auto===false)delete S.auto;else S.auto=false}else if(k=='autoWS'){if(S.autoWS)delete S.autoWS;else S.autoWS=true}else if(k=='hideHow'){if(S.hideHow)delete S.hideHow;else S.hideHow=true}else if(k=='voice'){if(S.voice)delete S.voice;else{S.voice=true;say('Glasovno vođenje je uključeno')}}else return;save();render()}));
+ {const g=$('#gpc');if(g)g.addEventListener('click',e=>{const b=e.target.closest('[data-gp]');if(!b)return;const v=b.dataset.gp;if(!v)delete S.goalProg;else if(!S.goalProg||S.goalProg.id!=v)S.goalProg={id:v,start:wkStart(0)};save();render()})}
  document.querySelectorAll('[data-pref]').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('[data-pv]');if(!b)return;const k=g.dataset.pref,v=b.dataset.pv;
   const val=k=='autoWS'?v=='1':(k=='restAdj'||k=='kgStep')?+v:v;if(!val||val==='norm'||val==='on'||val==='auto')delete S[k];else S[k]=val;
   if(k=='scheme'){try{localStorage.setItem('trening-scheme',v)}catch(e){}}save();applySkin();render()}));
@@ -879,7 +895,21 @@ function bindCal(){
 // ---------- napredovanje, nadoknada, dnevnik, istezanje, kratki trening ----------
 let QW=null;
 function qualW(){if(QW!==null)return QW;let n=0;if(S.start&&S.profile)for(let o=-1;o>=-26;o--){if(addD(wkStart(o),6)<S.start)break;const s=summ(o);if(s.total&&s.okp>=80)n++}return QW=n}
-function withMake(plan){const L=makeList();if(!L.length)return plan;const P=plan.map(d=>Object.assign({},d,{ex:d.ex.slice(),base:d.ex.length}));L.forEach((e,j)=>{const free=P.filter(d=>!d.ex.some(x=>x.n==e.n));if(!free.length)return;const d=free.reduce((a,b)=>b.ex.length-b.base<a.ex.length-a.base?b:a);d.ex.push(Object.assign({},e,{mk:1}))});return P}
+const PGM={
+ zgib:{n:'Prvi zgib',eq:'p',info:'Za 6 nedelja do prvog pravog zgiba: visenje, pa negativni zgibovi, pa zgibovi.',w:[[['Visenje na vratilu',3,20],['Negativni zgibovi',2,2]],[['Visenje na vratilu',3,30],['Negativni zgibovi',3,3]],[['Visenje na vratilu',3,40],['Negativni zgibovi',3,4]],[['Negativni zgibovi',4,4],['Zgibovi',2,1]],[['Negativni zgibovi',3,5],['Zgibovi',3,1]],[['Zgibovi',4,2]]]},
+ sklek50:{n:'50 sklekova',info:'8 nedelja do 50 sklekova u dvije serije. Treba da možeš bar 5 sklekova zaredom.',w:[[['Sklek',4,5]],[['Sklek',4,8]],[['Sklek',4,10]],[['Sklek',4,12]],[['Sklek',4,15]],[['Sklek',4,18]],[['Sklek',3,22]],[['Sklek',2,25]]]},
+ plank2:{n:'Plank 2 min',info:'4 nedelje do plank-a od 2 minuta.',w:[[['Plank na podlakticama',3,30]],[['Plank na podlakticama',3,50]],[['Plank na podlakticama',3,75]],[['Plank na podlakticama',2,120]]]},
+ cucanj100:{n:'100 čučnjeva',info:'6 nedelja do 100 čučnjeva u tri serije.',w:[[['Čučanj',4,12]],[['Čučanj',4,16]],[['Čučanj',4,20]],[['Čučanj',4,25]],[['Čučanj',3,30]],[['Čučanj',3,34]]]}
+};
+const pgWeek=()=>S.goalProg?Math.floor((new Date(wkStart(0)+'T12:00:00')-new Date(S.goalProg.start+'T12:00:00'))/6048e5+.01)+1:0;
+function pgEx(){const G=S.goalProg&&PGM[S.goalProg.id];if(!G)return [];if(G.eq&&S.profile&&!eqSet(S.profile).includes(G.eq))return [];const w=pgWeek();if(w<1||w>G.w.length)return [];
+ return G.w[w-1].map(([n,st,v])=>{const b=EX.find(x=>x.n==n);if(!b)return null;const o=Object.assign({},b,{sets:st,pg:1});if(b.t)o.sec=v;else o.reps=v;return o}).filter(Boolean)}
+function withProg(P){const L=pgEx();if(!L.length)return P;const daily=P.length>5;
+ P.forEach((d,i)=>{if(daily&&i%2)return;L.forEach(e=>{const j=d.ex.findIndex(x=>x.n==e.n);const ne=Object.assign({},e);if(d.circ&&ne.sets>d.ex[0].sets)ne.sets=d.ex[0].sets;if(j>=0&&j<d.base)d.ex[j]=ne;else if(j<0)d.ex.push(ne)})});return P}
+function vPgm(){const G=S.goalProg&&PGM[S.goalProg.id];if(!G)return '';const w=pgWeek(),N=G.w.length;
+ if(w>N)return '<div class="card pgc"><b>🏆 Program „'+G.n+'” je završen!</b><p class="mute" style="margin:6px 0 10px">Probaj sada koliko možeš. Ako nije išlo do kraja, ponovi zadnje dvije nedelje.</p><div class="acts" style="justify-content:flex-start;margin:0"><button class="btn" data-pga="rep">Ponovi zadnje 2 nedelje</button><button class="btn ghost" data-pga="end">Završi program</button></div></div>';
+ const L=pgEx();return '<div class="card pgc"><span class="mute">Program sa ciljem</span><p style="margin:2px 0 6px;font-size:17px"><b>'+G.n+'</b> · nedelja '+w+' od '+N+'</p><div class="bar" style="margin:0 0 8px"><div style="width:'+Math.round((w-1)/N*100)+'%"></div></div><p class="mute" style="margin:0">'+(L.length?'Ove nedelje: '+L.map(e=>e.n+' '+dose(e)).join(', ')+'. Ubačeno u '+(build(S.profile).length>5?'svaki drugi trening':'svaki trening')+'.':G.info)+(w==N?' <b>Zadnja nedelja!</b>':'')+'</p></div>'}
+function withMake(plan){const L=makeList();const P=plan.map(d=>Object.assign({},d,{ex:d.ex.slice(),base:d.ex.length}));if(!L.length)return withProg(P);L.forEach((e,j)=>{const free=P.filter(d=>!d.ex.some(x=>x.n==e.n));if(!free.length)return;const d=free.reduce((a,b)=>b.ex.length-b.base<a.ex.length-a.base?b:a);d.ex.push(Object.assign({},e,{mk:1}))});return withProg(P)}
 const isWt=e=>e.eq=='b'||e.eq=='t'||e.eq=='k';
 function lastLog(e){const L=(S.log||{})[e.n];return L&&L.length?L[L.length-1]:null}
 function sugKg(e){const l=lastLog(e);if(!l)return '';const kg=Math.max(0,...l.s.map(x=>+x.kg||0));if(!kg)return '';const st=+S.kgStep||(kg<10?1:2.5);return l.s.every(x=>x.r>=l.tg)?Math.round((kg+st)*10)/10:kg}
@@ -913,7 +943,7 @@ function vPlan(){
  const nxBig=nx?(nx.dt==td?'Danas':nx.dt==addD(td,1)?'Sjutra':wdOf(nx.dt)):'';
  return '<h2 class="ios-t">Plan</h2>'+(W&&W.ph!='done'?'<div class="card nextc"><span class="mute">Trening u toku</span><p style="margin:0;font-size:17px"><b>'+esc(W.d.name)+'</b> · vježba '+(W.i+1)+' od '+W.d.ex.length+'</p><button class="btn" type="button" id="resume">Nastavi</button></div>':nx?'<div class="card nextc"><span class="mute">Sledeći trening</span><div class="nxrow"><b class="pct">'+nxBig+'</b><span class="mute">'+(nxBig==wdOf(nx.dt)?'':wdOf(nx.dt).toLowerCase()+', ')+fmtD(nx.dt)+'</span></div><p style="margin:2px 0 12px"><b>'+nx.d.name+'</b> · '+nEx(nx.d.ex.length)+'</p>'+
   (nx.dt==td&&nx.off==0?'<button class="btn" data-go="'+nx.i+'">Počni</button>':nx.off==0?'<button class="btn ghost" data-open-go="'+nx.i+'">Vježbe</button>':'')+'</div>':'')+
- vWeek(sm)+
+ vWeek(sm)+vPgm()+
  (mkAll.length?'<p class="mute">Nadoknada iz prošle nedelje je ubačena u treninge ispod: odrađeno '+mkAll.filter(Boolean).length+' od '+mkAll.length+'.</p>':'')+
  (openDay===undefined?(openDay=-1):0,'')+
  '<p class="ios-h">Dani treninga</p><div class="daylist">'+plan.map((d,i)=>{if(editDay===i)return vEdit(d,i);const dm=m[i]||{},all=d.ex.every((_,j)=>dm[j]=='ok'),bn=d.base||d.ex.length,op=openDay===i;
@@ -923,7 +953,7 @@ function vPlan(){
   const sc=all?' s-ok':o?' s-part':dt&&dt<td&&!(S.start&&dt<S.start)?' s-miss':'';
   if(!op)return '<div class="card dayc'+sc+(dt==td?' today':'')+'">'+head+'</div>';
   return '<div class="card dayc open'+sc+(dt==td?' today':'')+'" id="day'+i+'">'+head+'<div class="dayb"><p class="mute" style="margin:0">'+(d.circ?'Kružno: '+pl(d.ex[0].sets,'krug','kruga','krugova')+', pauza '+d.rest+' s između vježbi.':'Odmor između serija: '+d.rest+' s.')+' Označi ✓ ili ✗ za svaku vježbu.</p><ol class="ex">'+
-  d.ex.slice(0,bn).map((e,j)=>exLi(e,wk+'|'+i+'|'+j,dm[j])).join('')+(bn<d.ex.length?'</ol><h3 class="gh">Nadoknada iz prošle nedelje</h3><ol class="ex">'+d.ex.slice(bn).map((e,j)=>exLi(e,wk+'|'+i+'|'+(bn+j),dm[bn+j])).join(''):'')+
+  (()=>{const ix=d.ex.map((e,j)=>j),sec=(f,h)=>{const q=ix.filter(f);return q.length?(h?'</ol><h3 class="gh">'+h+'</h3><ol class="ex">':'')+q.map(j=>exLi(d.ex[j],wk+'|'+i+'|'+j,dm[j])).join(''):''};return sec(j=>j<bn&&!d.ex[j].pg)+sec(j=>j>=bn&&d.ex[j].mk,'Nadoknada iz prošle nedelje')+sec(j=>d.ex[j].pg,'Program: '+(PGM[(S.goalProg||{}).id]||{}).n+' · nedelja '+pgWeek())})()+
   '</ol><div class="acts" style="justify-content:flex-start;margin-top:0"><button class="btn" data-go="'+i+'">Počni trening</button><button class="btn ghost" data-edit="'+i+'">Izaberi vježbe</button></div></div></div>'}).join('')+'</div>'+
  '<p class="ios-h">Dodatno</p><div class="ios"><button type="button" class="irow" id="quick">Kratki trening · 10 min<span>›</span></button><button type="button" class="irow" id="strb">Istezanje · 3 min<span>›</span></button></div><p class="ios-f">Kratki trening se u kalendaru računa kao djelimično odrađen dan.</p>'+
  '<p class="ios-f">Plan postaje teži poslije svake dvije nedelje u kojima odradiš bar 80%. Do sada takvih nedelja: '+qualW()+'.'+(S.adj?' Po tvojim ocjenama treninzi su '+(S.adj>0?'pojačani':'olakšani')+' za '+Math.abs(S.adj*2)+' ponavljanja.':'')+'</p>'+
@@ -935,6 +965,7 @@ function vPlan(){
 function bindPlan(){
  bindEdit();
  {const rs=$('#resume');if(rs)rs.addEventListener('click',()=>setTab('go'))}
+ document.querySelectorAll('[data-pga]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.pga=='end')delete S.goalProg;else{const N=PGM[S.goalProg.id].w.length;S.goalProg.start=addD(wkStart(0),-(N-2)*7)}save();render()}));
  document.querySelectorAll('[data-open-go]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.openGo;openDay=i;render();const c=$('#day'+i);if(c)c.scrollIntoView({block:'start',behavior:'smooth'})}));
  document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.open;openDay=openDay===i?-1:i;render();const c=$('#day'+i);if(c)c.scrollIntoView({block:'nearest'})}));
  {const q=$('#quick');if(q)q.addEventListener('click',()=>startSpecial('quick'));const t=$('#strb');if(t)t.addEventListener('click',()=>startSpecial('str'))}
@@ -956,13 +987,25 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='
 function warmDay(){return {name:'Zagrijavanje',rest:5,ex:[['Kruženje ramenima','Kruži ramenima naprijed pa nazad, polako.'],['Kruženje kukovima','Ruke na kukovima, kruži kukovima u oba smjera.'],['Marširanje u mjestu','Marširaj podižući koljena, mašući rukama.'],['Lagani čučnjevi','Polako, samo do pola, da se zagriju koljena.']].map(([n,o])=>({n,o,s:'Lagano, bez naprezanja.',g:'warm',eq:'0',t:1,sec:30,sets:1,st:[]}))}}
 let wT0=null,wEnd=null;
 const fmtE=ms=>{const t=Math.max(0,Math.floor(ms/1000)),h=Math.floor(t/3600),m=Math.floor(t%3600/60),x=t%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
-const elTxt=()=>{const e=fmtE((wEnd||Date.now())-(wT0||Date.now())),p=S.profile;return isDaily(p)&&W&&W.mode!='str'?e+' <small>/ '+(p.min||20)+':00</small>':e};
+const elTxt=()=>{const e=fmtE((wEnd||(W&&W.paused&&W.pT)||Date.now())-(wT0||Date.now())),p=S.profile;return isDaily(p)&&W&&W.mode!='str'?e+' <small>/ '+(p.min||20)+':00</small>':e};
 setInterval(()=>{const el=document.getElementById('elapsed');if(el&&wT0&&!wEnd)el.innerHTML=elTxt()},500);
-function startW(k,noWarm){wake();if(!noWarm||!wT0){wT0=Date.now();wEnd=null}if(S.autoWS&&!noWarm){W={k:-1,mode:'warm',next:k,d:warmDay(),i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go');return}const d=withMake(build(S.profile))[k];W={k,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go')}
+function startW(k,noWarm){wake();if(!noWarm||!wT0){wT0=Date.now();wEnd=null}if(S.autoWS&&!noWarm){W={k:-1,mode:'warm',next:k,d:warmDay(),i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go');return}const d=withMake(build(S.profile))[k];W={k,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}say(S.voice?'Prva vježba: '+d.ex[0].n+', '+sayDose(d.ex[0]):'');setTab('go')}
 function stopTick(){clearInterval(tick);tick=null}
-function run(sec,ph){stopTick();W.ph=ph;W.t=sec;W.tt=sec;W.end=Date.now()+sec*1000;render();tick=setInterval(()=>{const nt=Math.max(0,Math.ceil((W.end-Date.now())/1000));if(nt===W.t)return;W.t=nt;if(W.t>0&&W.t<=3)tone(660,.08);if(W.t<=0){stopTick();beep();if(ph=='rest'){W.ph='ready';const ne=W.d.ex[W.i];if(S.auto!==false&&ne&&ne.t){run(ne.sec,'work');return}}else{W.rec=W.rec||{};(W.rec[W.i]=W.rec[W.i]||[]).push({r:sec});afterSet()}render();return}const el=$('#clock');if(el)el.textContent=fmt(W.t);const rg=$('#ring');if(rg)rg.style.setProperty('--p',W.t/W.tt)},250)}
+let vVoice=null;
+function say(t,force){if(!S.voice&&!force)return;try{const ss=window.speechSynthesis;if(!ss)return;if(!vVoice){const V=ss.getVoices();vVoice=['sr','hr','bs'].map(l=>V.find(v=>v.lang.toLowerCase().startsWith(l))).find(Boolean)||null}ss.cancel();if(!t)return;const u=new SpeechSynthesisUtterance(t);if(vVoice){u.voice=vVoice;u.lang=vVoice.lang}else u.lang='hr-HR';u.rate=1.05;ss.speak(u)}catch(e){}}
+try{speechSynthesis.onvoiceschanged=()=>{vVoice=null}}catch(e){}
+const sayDose=e=>e.t?e.sec+' sekundi':e.reps+' ponavljanja';
+function announce(ph,sec){if(!S.voice||!W)return;const e=W.d.ex[W.i];if(!e)return;if(ph=='rest')say('Odmor '+sec+' sekundi. Sledeće: '+e.n+', '+sayDose(e));else if(ph=='work')say('Kreni! '+e.n)}
+function pauseW(){if(!W||W.paused||W.ph=='done')return;stopTick();W.paused=1;W.pT=Date.now();say('Pauza');render()}
+function resumeW(){if(!W||!W.paused)return;if(wT0)wT0+=Date.now()-W.pT;W.paused=0;if(W.ph=='work'||W.ph=='rest')run(W.t,W.ph,1);else render();say('Nastavljamo')}
+function swapEx(){const e=W.d.ex[W.i];if(!e||!e.g||!S.profile)return false;const ok=allowedEx(S.profile),used=new Set(W.d.ex.map(x=>x.n));W.sw=W.sw||{};const tr=W.sw[W.i]=W.sw[W.i]||[e.n];
+ const f=x=>x.g==e.g&&ok(x)&&!used.has(x.n);let c=EX.filter(x=>f(x)&&!tr.includes(x.n));if(!c.length){W.sw[W.i]=[e.n];c=EX.filter(f)}if(!c.length)return false;
+ c.sort((a,b)=>Math.abs(a.d-e.d)-Math.abs(b.d-e.d)||(a.eq==e.eq?-1:0));const n=c[0];W.sw[W.i].push(n.n);
+ const ne=Object.assign({},n,{sets:e.sets});if(n.t){delete ne.reps;ne.sec=e.t?e.sec:(W.d.ex.find(x=>x.t)||{sec:30}).sec}else{delete ne.sec;ne.reps=e.t?(W.d.circ?12:10):e.reps}
+ ['mk','pg'].forEach(k=>{if(e[k])ne[k]=e[k]});W.d.ex[W.i]=ne;return true}
+function run(sec,ph,keep){stopTick();W.ph=ph;W.t=sec;if(!keep){W.tt=sec;W.paused=0;announce(ph,sec)}W.end=Date.now()+sec*1000;render();tick=setInterval(()=>{const nt=Math.max(0,Math.ceil((W.end-Date.now())/1000));if(nt===W.t)return;W.t=nt;if(W.t==10&&W.tt>=20)say('Još 10 sekundi');if(W.t>0&&W.t<=3)tone(660,.08);if(W.t<=0){stopTick();beep();if(ph=='rest'){W.ph='ready';const ne=W.d.ex[W.i];if(S.auto!==false&&ne&&ne.t){run(ne.sec,'work');return}}else{W.rec=W.rec||{};(W.rec[W.i]=W.rec[W.i]||[]).push({r:sec});afterSet()}render();return}const el=$('#clock');if(el)el.textContent=fmt(W.t);const rg=$('#ring');if(rg)rg.style.setProperty('--p',W.t/W.tt)},250)}
 const fmt=s=>s>=60?Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):String(s);
-function finishW(){if(W&&W.mode=='warm'){const k=W.next;stopTick();W=null;startW(k,1);return}stopTick();unwake();wEnd=Date.now();W.ph='done';if(W.k>=0)S.done.push({d:today(),k:W.k});if(W.mode=='quick'){S.quick=S.quick||{};S.quick[today()]=1}save();render()}
+function finishW(){if(W&&W.mode=='warm'){const k=W.next;stopTick();W=null;startW(k,1);return}stopTick();unwake();wEnd=Date.now();W.ph='done';W.paused=0;say(W.mode=='str'?'Istezanje je završeno':'Bravo, trening je završen');if(W.k>=0)S.done.push({d:today(),k:W.k});if(W.mode=='quick'){S.quick=S.quick||{};S.quick[today()]=1}save();render()}
 function cNext(){const L=W.d.ex.length,R=Math.max(...W.d.ex.map(x=>x.sets));let i=W.i,r=W.set;
  for(let g=0;g<=L*R;g++){i++;if(i>=L){i=0;r++}if(r>R)return finishW();if(!(W.sk||{})[i]&&r<=W.d.ex[i].sets){const nr=r!=W.set;W.i=i;W.set=r;W.nr=nr;return run(nr?Math.max(20,60+(+S.restAdj||0)*2):W.d.rest,'rest')}}
  finishW()}
@@ -980,19 +1023,22 @@ function vGo(){
  if(W.ph=='done')return '<div class="card live"><h2>'+(W.mode=='str'?'Istezanje završeno!':'Bravo, trening završen!')+'</h2><p class="mute">'+d.name+' · trajanje '+fmtE((wEnd||Date.now())-(wT0||Date.now()))+' · '+nEx(d.ex.length)+' · '+pl(tot,'serija','serije','serija')+'</p>'+
  (W.mode=='str'?'':W.rated!==undefined?'<p>'+['Važi, sledeći treninzi su malo lakši.','Super, ostaje ovako.','Važi, sledeći treninzi su malo teži.'][W.rated+1]+'</p>':'<p><b>Kakav je bio trening?</b></p><div class="chips" style="justify-content:center"><button class="chip" data-rate="1">Lako</button><button class="chip" data-rate="0">Taman</button><button class="chip" data-rate="-1">Teško</button></div>')+
  '<div class="acts">'+(W.mode=='str'?'':'<button class="btn blue" id="strgo">Istezanje · 3 min</button>')+'<button class="btn" id="toplan">Nazad na plan</button></div></div>';
- const next=e;
+ const next=e,swB=e.g&&W.mode!='warm'&&W.mode!='str'?'<button class="btn ghost" id="swap" type="button">⇄ Zamijeni</button>':'';
  let mid;
- if(W.ph=='rest')mid='<div class="ring" id="ring" style="--p:'+(W.t/(W.tt||1))+'"><div><div class="big" id="clock">'+fmt(W.t)+'</div><div class="lbl">'+(d.circ&&W.nr?'odmor prije '+W.set+'. kruga':'odmor')+'</div></div></div><p>Sledeće: <b>'+next.n+'</b> · '+dose(next)+'</p><div class="acts"><button class="btn blue" id="skip">Preskoči odmor</button></div>';
+ if(W.ph=='rest')mid='<div class="ring" id="ring" style="--p:'+(W.t/(W.tt||1))+'"><div><div class="big" id="clock">'+fmt(W.t)+'</div><div class="lbl">'+(d.circ&&W.nr?'odmor prije '+W.set+'. kruga':'odmor')+'</div></div></div><p>Sledeće: <b>'+next.n+'</b> · '+dose(next)+'</p><div class="acts"><button class="btn blue" id="skip">Preskoči odmor</button>'+swB+'</div>';
  else if(W.ph=='work')mid='<div class="ring" id="ring" style="--p:'+(W.t/(W.tt||1))+'"><div><div class="big" id="clock">'+fmt(W.t)+'</div><div class="lbl">radi</div></div></div><div class="acts"><button class="btn ghost" id="fin">Završi ranije</button></div>';
  else mid='<div class="ring" style="--p:1"><div><div class="big">'+(e.t?e.sec:e.reps)+'</div><div class="lbl">'+(e.t?'sekundi':'ponavljanja')+'</div></div></div>'+(sugg(e)?'<p class="sug">'+sugg(e)+'</p>':'')+
- (e.t||W.mode?'':'<div class="logrow"><label>Ponavljanja<input id="lr" type="number" inputmode="numeric" min="0" max="200" value="'+e.reps+'"></label>'+(isWt(e)?'<label>Težina (kg)<input id="lk" type="number" inputmode="decimal" min="0" max="300" step="0.5" value="'+(((W.rec||{})[W.i]||[]).slice(-1)[0]||{kg:sugKg(e)}).kg+'"></label>':'')+'</div>')+'<div class="acts">'+(e.t?'<button class="btn" id="tmr">Pokreni '+e.sec+' s</button>':'<button class="btn" id="fin">Serija gotova</button>')+'<button class="btn ghost" id="skx">Preskoči vježbu</button></div>';
- return '<div class="wbar"><button class="btn ghost" id="wback" type="button">‹ Plan</button><b>'+esc(d.name)+'</b><span class="el" id="elapsed" aria-label="Proteklo vrijeme">'+elTxt()+'</span></div><div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">'+(d.circ?'Krug':'Serija')+' '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
+ (e.t||W.mode?'':'<div class="logrow"><label>Ponavljanja<input id="lr" type="number" inputmode="numeric" min="0" max="200" value="'+e.reps+'"></label>'+(isWt(e)?'<label>Težina (kg)<input id="lk" type="number" inputmode="decimal" min="0" max="300" step="0.5" value="'+(((W.rec||{})[W.i]||[]).slice(-1)[0]||{kg:sugKg(e)}).kg+'"></label>':'')+'</div>')+'<div class="acts">'+(e.t?'<button class="btn" id="tmr">Pokreni '+e.sec+' s</button>':'<button class="btn" id="fin">Serija gotova</button>')+'<button class="btn ghost" id="skx">Preskoči vježbu</button>'+swB+'</div>';
+ if(W.paused)mid='<div class="ring paused" style="--p:'+(W.ph=='ready'?1:W.t/(W.tt||1))+'"><div><div class="big">'+(W.ph=='ready'?'❚❚':fmt(W.t))+'</div><div class="lbl">pauza</div></div></div><div class="acts"><button class="btn" id="resw">▶ Nastavi</button></div>';
+ return '<div class="wbar"><button class="btn ghost" id="wback" type="button">‹ Plan</button><b>'+esc(d.name)+'</b><span class="el" id="elapsed" aria-label="Proteklo vrijeme">'+elTxt()+'</span></div><button class="btn ghost pz" id="pause" type="button" aria-label="'+(W.paused?'Nastavi':'Pauza')+'">'+(W.paused?'▶ Nastavi':'❚❚ Pauza')+'</button><div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+(e.pg?' · <span class="pgt">program</span>':'')+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">'+(d.circ?'Krug':'Serija')+' '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
  '<div class="card howto"><h3>Kako se radi</h3><p>'+e.o+'</p><p><strong>Savjet:</strong> '+e.s+'</p><p>'+ytLink(e.n)+'</p></div><button class="btn ghost" id="quit">Prekini trening</button>';
 }
 function bindGo(){
  const on=(id,f)=>{const b=$('#'+id);if(b)b.addEventListener('click',f)};
  on('toplan',()=>{W=null;setTab('plan')});on('wback',()=>setTab('plan'));on('strgo',()=>startSpecial('str'));
  document.querySelectorAll('[data-rate]').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.rate;S.adj=Math.max(-3,Math.min(3,(S.adj||0)+v));S.rates=(S.rates||[]).concat({d:today(),v}).slice(-30);W.rated=v;save();if(S.autoWS){startSpecial('str');return}render()}));on('skip',()=>{stopTick();const ne=W.d.ex[W.i];if(ne&&ne.t)run(ne.sec,'work');else{W.ph='ready';render()}});
+ on('pause',()=>{W.paused?resumeW():pauseW()});on('resw',resumeW);
+ on('swap',()=>{const b=$('#swap');if(swapEx()){say(S.voice?'Zamjena: '+W.d.ex[W.i].n+', '+sayDose(W.d.ex[W.i]):'');render()}else if(b){b.textContent='Nema druge';b.disabled=true}});
  on('tmr',()=>run(W.d.ex[W.i].sec,'work'));on('fin',()=>{stopTick();const e=W.d.ex[W.i];W.rec=W.rec||{};const R=W.rec[W.i]=W.rec[W.i]||[];
   if(W.ph=='ready'&&!e.t){const r=+(($('#lr')||{}).value||e.reps),k=$('#lk')?+$('#lk').value||0:0;R.push(k?{r,kg:k}:{r})}
   else if(e.t)R.push({r:W.ph=='work'?e.sec-W.t:e.sec});
@@ -1001,6 +1047,22 @@ function bindGo(){
  {const q=$('#quit');if(q)q.addEventListener('click',()=>{if(!q.dataset.sure){q.dataset.sure=1;q.textContent='Sigurno prekidaš? Dodirni ponovo';q.classList.add('warn');setTimeout(()=>{if(q.isConnected){delete q.dataset.sure;q.textContent='Prekini trening';q.classList.remove('warn')}},3000);return}stopTick();unwake();W=null;wT0=null;setTab('plan')})}
 }
 
+let phURLs=[],phA=null,phB=null;
+function phDB(){return new Promise((ok,no)=>{if(!window.indexedDB)return no('x');const r=indexedDB.open('trening-foto',1);r.onupgradeneeded=()=>r.result.createObjectStore('p',{keyPath:'id',autoIncrement:true});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+async function phAll(){const db=await phDB();return new Promise(ok=>{const q=db.transaction('p').objectStore('p').getAll();q.onsuccess=()=>ok((q.result||[]).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:a.id-b.id));q.onerror=()=>ok([])})}
+async function phTx(f){const db=await phDB();return new Promise((ok,no)=>{const t=db.transaction('p','readwrite');f(t.objectStore('p'));t.oncomplete=ok;t.onerror=()=>no(t.error)})}
+function phShrink(file){return new Promise((ok,no)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?ok(b):no('blob'),'image/jpeg',.82)};im.onerror=()=>{URL.revokeObjectURL(u);no('img')};im.src=u})}
+async function loadPhotos(){const box=$('#photos');if(!box)return;let L;try{L=await phAll()}catch(e){box.innerHTML='<p class="mute" style="margin:0">Ovaj preglednik ne dozvoljava čuvanje slika.</p>';return}
+ if(!box.isConnected)return;phURLs.forEach(u=>URL.revokeObjectURL(u));phURLs=[];const U={};L.forEach(x=>{U[x.id]=URL.createObjectURL(x.b);phURLs.push(U[x.id])});
+ if(!L.find(x=>x.id==phA))phA=L.length?L[0].id:null;if(!L.find(x=>x.id==phB))phB=L.length?L[L.length-1].id:null;
+ const last=L[L.length-1],due=!last||addD(last.d,30)<=today(),opt=sel=>L.map(x=>'<option value="'+x.id+'"'+(x.id==sel?' selected':'')+'>'+fmtD(x.d)+x.d.slice(0,4)+'.</option>').join('');
+ const fig=(id,lbl,sid)=>{const x=L.find(z=>z.id==id);return '<figure class="phf"><img src="'+U[id]+'" alt="'+lbl+'"><figcaption>'+lbl+(L.length>2?'<select id="'+sid+'" aria-label="'+lbl+'">'+opt(id)+'</select>':' · '+fmtD(x.d)+x.d.slice(0,4)+'.')+'</figcaption></figure>'};
+ box.innerHTML=(L.length>=2&&phA!=phB?'<div class="phcmp">'+fig(phA,'Prije','phsa')+fig(phB,'Sada','phsb')+'</div>':L.length==1?'<div class="phcmp one">'+fig(L[0].id,'Prva slika','')+'</div><p class="mute" style="margin:8px 0 0">Za mjesec dana dodaj novu sliku, pa ih uporedi jednu pored druge.</p>':'<p class="mute" style="margin:0">Jednom mjesečno se slikaj na istom mjestu, u istoj odjeći i pri istom svjetlu. Ovdje ćeš vidjeti prije i sada.</p>')+
+ (L.length?'<div class="phg">'+L.slice().reverse().map(x=>'<div class="pht"><img src="'+U[x.id]+'" alt="Slika '+fmtD(x.d)+'"><span>'+fmtD(x.d)+'</span><button class="x" data-phdel="'+x.id+'" aria-label="Obriši sliku">×</button></div>').join('')+'</div>':'')+
+ '<label class="btn'+(due?'':' ghost')+'" style="margin-top:12px;width:100%">'+(due?'📷 Dodaj sliku za ovaj mjesec':'📷 Dodaj sliku')+'<input type="file" id="phin" accept="image/*" hidden></label><p id="phmsg" class="mute" style="margin:6px 0 0"></p>';
+ const a=$('#phsa'),b=$('#phsb');if(a)a.addEventListener('change',()=>{phA=+a.value;loadPhotos()});if(b)b.addEventListener('change',()=>{phB=+b.value;loadPhotos()});
+ box.querySelectorAll('[data-phdel]').forEach(x=>x.addEventListener('click',async()=>{if(!x.dataset.sure){x.dataset.sure=1;x.textContent='Obriši?';x.classList.add('sure');setTimeout(()=>{if(x.isConnected){delete x.dataset.sure;x.textContent='×';x.classList.remove('sure')}},3000);return}await phTx(s=>s.delete(+x.dataset.phdel));loadPhotos()}));
+ const inp=$('#phin');if(inp)inp.addEventListener('change',async()=>{const f=inp.files&&inp.files[0];if(!f)return;const m=$('#phmsg');m.textContent='Čuvam…';try{const bl=await phShrink(f);await phTx(s=>s.add({d:today(),b:bl}));phB=null;loadPhotos()}catch(e){m.textContent='Slika nije sačuvana. Probaj drugu.'}})}
 function vNap(){
  if(!S.profile)return vPro();
  const ws=S.weights,f=ws[0],l=ws[ws.length-1],diff=f&&l?(l.kg-f.kg):0,b=bmi(S.profile);
@@ -1009,7 +1071,8 @@ function vNap(){
  (ws.length>1?'<div class="fig" style="min-height:200px;margin-top:12px"><svg id="ch" role="img" aria-label="Grafikon težine"></svg></div>':'<p class="mute" style="margin-bottom:0">Grafikon se pojavljuje kad upišeš bar dva mjerenja.</p>')+
  (ws.length?'<details class="wlog"><summary>Sva mjerenja ('+ws.length+')</summary><table>'+ws.slice().reverse().map(x=>'<tr><td>'+fmtD(x.d)+x.d.slice(0,4)+'.'+'</td><td class="n">'+x.kg+' kg</td><td class="n"><button class="x" data-del="'+x.d+'" aria-label="Obriši">×</button></td></tr>').join('')+'</table></details>':'')+'</div>'+
  '<p class="ios-f">Najbolje jednom nedeljno, ujutru, istim danom.</p>'+
- vBadges()+vExChart()+vNutri()+vMeas()+vHist();
+ vBadges()+vExChart()+vNutri()+vMeas()+vHist()+
+ '<p class="ios-h">Slike napretka</p><div class="card" id="photos" style="margin-top:0"><p class="mute" style="margin:0">Učitavam…</p></div><p class="ios-f">Slike ostaju samo na ovom telefonu. Ne šalju se nigdje i nisu u kopiji podataka.</p>';
 }
 
 const MS=[['struk','Struk'],['kuk','Kukovi'],['but','Butina'],['ruka','Nadlaktica']];
@@ -1038,6 +1101,7 @@ function vMeas(){const M=S.meas||[],f=M[0],l=M[M.length-1];
  M.slice().reverse().map(x=>'<tr><td>'+fmtD(x.d)+x.d.slice(0,4)+'.</td>'+MS.map(y=>'<td class="n" data-l="'+y[1]+'">'+(x[y[0]]||'–')+'</td>').join('')+'<td class="n"><button type="button" class="x" data-mdel="'+x.d+'" aria-label="Obriši">×</button></td></tr>').join('')+'</tbody></table>':'')+'</form>'}
 let ro=null;
 function bindNap(){
+ loadPhotos();
  {const x=$('#exsel');if(x)x.addEventListener('change',()=>{exSel=x.value;render()});const c=$('#exch');if(c){const ser=exSeries(exSel),k=ser.some(z=>z.kg>0);drawLine(c,ser.map(z=>k?z.kg:z.r),ser.map(z=>z.d))}}
  {const t=$('#topro');if(t)t.addEventListener('click',()=>setTab('pro'))}
  $('#mf').addEventListener('submit',e=>{e.preventDefault();const o={d:today()};let n=0;MS.forEach(([k])=>{const v=+$('#m_'+k).value;if(v>=10&&v<=250){o[k]=v;n++}});
