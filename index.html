@@ -295,6 +295,27 @@ details.wlog summary{cursor:pointer;color:var(--mute);font-size:14px;margin-top:
 .bdg{padding:8px;font-size:13px}.bdg .bi{width:26px;height:26px}
 .nap .stats .stat b{font-size:clamp(20px,5.5vw,26px)}
 #dayp table tr:first-child td{border-top:0}
+
+/* mirniji, ravni izgled: bez prelaza boja, sjaja i ukrasa */
+.top{background:var(--hdr)!important;padding-top:22px}
+.top::before,.top::after{display:none!important}
+.top h1{text-shadow:none!important}
+nav button.on{box-shadow:none!important}
+.card,.ios,.daylist,.stat{box-shadow:none!important;border-radius:14px}
+.btn{background:var(--red)!important;box-shadow:none!important;border-radius:12px;filter:none!important}
+.btn.ghost{background:transparent!important;border:1.5px solid var(--line)!important;color:var(--ink)}
+.btn.blue{background:var(--blue)!important}
+.btn.warn{color:var(--no)!important;border-color:color-mix(in srgb,var(--no) 50%,var(--line))!important}
+.chip.on,.seg .chip.on,:is([data-pref],#skin,#autoc,#hint,#rmon,[data-k]) .chip.on{background:var(--red)!important;box-shadow:none!important;color:#fff!important}
+.nextc{background:var(--card)!important}
+.nextc .pct{color:var(--ink)!important}
+.bdg.got{background:var(--card)!important}
+.bdg.got .bi{background:var(--red)!important}
+.dayc.today{box-shadow:none!important}
+.daylist>.dayc.today{box-shadow:inset 3px 0 0 var(--red)!important}
+.tag.today{background:var(--red)}
+.fade>*{animation:none!important}
+.chip:active,.btn:active,.cd:active{transform:none!important;opacity:.75}
 </style>
 </head>
 <body>
