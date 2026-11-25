@@ -305,6 +305,9 @@ details.wlog summary{cursor:pointer;color:var(--mute);font-size:14px;margin-top:
 details[open]>*:not(summary){animation:fin .14s ease-out}
 .dayc.open .dayb{animation:fin .14s ease-out}
 @media(prefers-reduced-motion:reduce){.fade>*,details[open]>*,.dayc.open .dayb{animation:none!important}}
+
+.fade.sl>*{animation-name:fromr!important}.fade.sr>*{animation-name:froml!important}
+@keyframes fromr{from{opacity:0;transform:translateX(24px)}}@keyframes froml{from{opacity:0;transform:translateX(-24px)}}
 </style>
 </head>
 <body>
@@ -1115,6 +1118,13 @@ function drawLine(s,vals,labels){const draw=()=>{const W2=s.clientWidth,H=s.clie
   '<polyline points="'+vals.map((v,i)=>X(i)+','+Y(v)).join(' ')+'" fill="none" stroke="var(--red)" stroke-width="3" stroke-linejoin="round"/>'+vals.map((v,i)=>'<circle cx="'+X(i)+'" cy="'+Y(v)+'" r="4.5" fill="var(--red)"/>').join('')+
   (W2>420?'<text x="'+pad+'" y="'+(H-6)+'" font-size="13" fill="var(--mute)">'+fmtD(labels[0])+'</text><text x="'+(W2-12)+'" y="'+(H-6)+'" font-size="13" fill="var(--mute)" text-anchor="end">'+fmtD(labels[labels.length-1])+'</text>':'')};
  if(ro2)ro2.disconnect();ro2=new ResizeObserver(draw);ro2.observe(s)}
+// prelaz između kartica prevlačenjem prsta lijevo/desno
+const TABS=['plan','cal','nap','pro'];let swX=null,swY=0,swT=0,swDir=0;
+document.addEventListener('touchstart',e=>{const t=e.touches[0];swX=null;if(e.touches.length>1||!S.profile||tab=='go'||editDay!==null)return;
+ if(e.target.closest('input,select,textarea,.scroll,nav,.fig,.cal'))return;swX=t.clientX;swY=t.clientY;swT=Date.now()},{passive:true});
+document.addEventListener('touchend',e=>{if(swX===null)return;const t=e.changedTouches[0],dx=t.clientX-swX,dy=t.clientY-swY;swX=null;
+ if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.8||Date.now()-swT>700)return;const i=TABS.indexOf(tab);if(i<0)return;const n=i+(dx<0?1:-1);if(n<0||n>=TABS.length)return;
+ swDir=dx<0?1:-1;setTab(TABS[n]);window.scrollTo(0,0)},{passive:true});
 let lastTab=null;
 function render(){
  if(snapWeek())save();
@@ -1132,7 +1142,7 @@ function render(){
  header();
  const V={plan:[vPlan,bindPlan],cal:[vCal,bindCal],go:[vGo,bindGo],nap:[vNap,bindNap],pro:[vPro,bindPro]}[tab];
  $('#app').dataset.tab=tab;$('#app').innerHTML=V[0]();
- if(lastTab!==tab){const a=$('#app');a.classList.remove('fade');void a.offsetWidth;a.classList.add('fade');lastTab=tab}
+ if(lastTab!==tab){const a=$('#app');a.classList.remove('fade','sl','sr');void a.offsetWidth;a.classList.add('fade');if(swDir)a.classList.add(swDir>0?'sl':'sr');swDir=0;lastTab=tab}
  if(!S.profile||tab=='pro')bindPro();else V[1]();
 }
 render();
