@@ -314,7 +314,10 @@ details[open]>*:not(summary){animation:fin .14s ease-out}
 
 .wbar .el{font:700 20px "Barlow Condensed",sans-serif;font-variant-numeric:tabular-nums;color:var(--red);white-space:nowrap;min-width:58px;text-align:right}
 .wbar .el small{font-size:14px;color:var(--mute);font-weight:600}
-.pz{display:block;margin:-4px 0 10px auto;min-height:34px;padding:4px 14px;font-size:15px}
+.wbar{grid-template-columns:auto minmax(0,1fr) auto auto}
+.pz{width:40px;height:40px;border-radius:99px;border:1px solid var(--line);background:var(--card,transparent);color:var(--ink,inherit);font:700 14px system-ui,sans-serif;letter-spacing:-1px;display:grid;place-items:center;padding:0;cursor:pointer}
+.pz.on{background:var(--red);color:#fff;border-color:var(--red);letter-spacing:0;font-size:16px}
+@media(max-width:350px){.wbar{gap:6px}.wbar .el{min-width:0;font-size:18px}.wbar .el small{display:none}}
 .ring.paused{opacity:.75}.ring.paused .big{color:var(--mute)}
 .pgt{color:var(--red);font-weight:700}
 .pgc .bar{height:6px}
@@ -326,6 +329,9 @@ details[open]>*:not(summary){animation:fin .14s ease-out}
 .pht span{position:absolute;left:4px;bottom:4px;font-size:11px;color:#fff;background:#0008;border-radius:5px;padding:1px 4px}
 .pht .x{position:absolute;top:2px;right:2px;background:#000a;color:#fff;border-radius:99px;min-width:24px;height:24px;padding:0 6px;font-size:13px;line-height:24px;border:0}
 .pht .x.sure{background:var(--no)}
+.ios .srow.stk{grid-template-columns:1fr;gap:8px;padding:12px 0}
+.ios .srow.stk>.chips{display:flex;flex-wrap:wrap;gap:6px}
+.ios .srow.stk>.chips .chip{padding:7px 13px!important}
 </style>
 </head>
 <body>
@@ -565,7 +571,7 @@ function vPro(){
   pref('Brzina','prog',[['slow','Sporo'],['norm','Normalno'],['fast','Brzo']],'norm')+
   pref('Korak kg','kgStep',[['0','Auto'],['1','1'],['2','2'],['2.5','2,5']],'0'),
   'Koliko brzo plan postaje teži i za koliko kg aplikacija predlaže da povećaš težinu.')+
- (S.profile?grp('Program sa ciljem',sr('Program','<div class="chips" id="gpc">'+[['','Bez']].concat(Object.entries(PGM).filter(([k,v])=>!v.eq||eqSet(S.profile).includes(v.eq)).map(([k,v])=>[k,v.n])).map(([k,t])=>'<button type="button" class="chip'+(((S.goalProg||{}).id||'')==k?' on':'')+'" data-gp="'+k+'">'+t+'</button>').join('')+'</div>'),
+ (S.profile?grp('Program sa ciljem','<div class="srow stk"><span class="sl">Cilj</span><div class="chips" id="gpc">'+[['','Bez']].concat(Object.entries(PGM).filter(([k,v])=>!v.eq||eqSet(S.profile).includes(v.eq)).map(([k,v])=>[k,v.n])).map(([k,t])=>'<button type="button" class="chip'+(((S.goalProg||{}).id||'')==k?' on':'')+'" data-gp="'+k+'">'+t+'</button>').join('')+'</div></div>',
   S.goalProg&&PGM[S.goalProg.id]?PGM[S.goalProg.id].n+': nedelja '+Math.min(pgWeek(),PGM[S.goalProg.id].w.length)+' od '+PGM[S.goalProg.id].w.length+'. Vježbe programa se dodaju u treninge.':'Izaberi cilj i aplikacija ga dodaje u tvoje treninge, nedelju po nedelju.'+(eqSet(S.profile).includes('p')?'':' Za „Prvi zgib” u opremi označi vratilo.')):'')+(uid?vRemind():'')+(uid&&isOwner()?'<div class="card"><h3>Pregled korisnika</h3><p class="mute">Vidiš samo anonimnu statistiku, bez imena, emaila i težine.</p><button class="btn ghost" type="button" id="ownl">Učitaj pregled</button><div id="ownv"></div></div>':'')+
  (uid?'<p class="ios-h">Nalog</p><div class="card" style="margin-top:0"><p class="mute" id="acc"></p>'+(auth.currentUser&&!auth.currentUser.emailVerified?'<div class="verif"><p style="margin:0 0 8px"><b>Email nije potvrđen.</b> Potvrda služi da niko drugi ne može koristiti tvoj email.</p><div class="acts" style="justify-content:flex-start;margin:0"><button class="btn" type="button" id="vsend">Pošalji link za potvrdu</button><button class="btn ghost" type="button" id="vdone">Potvrdio sam</button></div><p class="mute" id="vmsg" style="margin-bottom:0"></p></div>':'')+'<div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="lo" type="button">Odjavi se</button><button class="btn ghost warn" id="delacc" type="button">Obriši nalog</button></div><p class="mute" id="delmsg"></p><p class="mute" style="margin-bottom:0">Vlasniku aplikacije se šalje samo anonimna statistika: broj treninga, procenat po nedelji, cilj i način treninga. Bez imena, emaila, težine i mjera.</p></div>':'')+(S.profile?'<p class="ios-h">Profil</p><details class="card pf" style="margin-top:0"><summary><span><b>Tvoji podaci i plan</b><br><span class="mute">'+esc([p.name,p.w&&p.w+' kg',p.h&&p.h+' cm',p.age&&p.age+' god.',(GOAL[p.goal]||{}).n].filter(Boolean).join(' · '))+'</span></span><span class="chev" aria-hidden="true">›</span></summary><form id="f">':'<form class="card" id="f"><h2>Hajde da počnemo</h2><p class="mute">Na osnovu ovoga pravim nedeljni plan.</p>')+
  '<label for="nm">Ime</label><input id="nm" value="'+esc(p.name)+'" autocomplete="given-name">'+
@@ -1030,7 +1036,7 @@ function vGo(){
  else mid='<div class="ring" style="--p:1"><div><div class="big">'+(e.t?e.sec:e.reps)+'</div><div class="lbl">'+(e.t?'sekundi':'ponavljanja')+'</div></div></div>'+(sugg(e)?'<p class="sug">'+sugg(e)+'</p>':'')+
  (e.t||W.mode?'':'<div class="logrow"><label>Ponavljanja<input id="lr" type="number" inputmode="numeric" min="0" max="200" value="'+e.reps+'"></label>'+(isWt(e)?'<label>Težina (kg)<input id="lk" type="number" inputmode="decimal" min="0" max="300" step="0.5" value="'+(((W.rec||{})[W.i]||[]).slice(-1)[0]||{kg:sugKg(e)}).kg+'"></label>':'')+'</div>')+'<div class="acts">'+(e.t?'<button class="btn" id="tmr">Pokreni '+e.sec+' s</button>':'<button class="btn" id="fin">Serija gotova</button>')+'<button class="btn ghost" id="skx">Preskoči vježbu</button>'+swB+'</div>';
  if(W.paused)mid='<div class="ring paused" style="--p:'+(W.ph=='ready'?1:W.t/(W.tt||1))+'"><div><div class="big">'+(W.ph=='ready'?'❚❚':fmt(W.t))+'</div><div class="lbl">pauza</div></div></div><div class="acts"><button class="btn" id="resw">▶ Nastavi</button></div>';
- return '<div class="wbar"><button class="btn ghost" id="wback" type="button">‹ Plan</button><b>'+esc(d.name)+'</b><span class="el" id="elapsed" aria-label="Proteklo vrijeme">'+elTxt()+'</span></div><button class="btn ghost pz" id="pause" type="button" aria-label="'+(W.paused?'Nastavi':'Pauza')+'">'+(W.paused?'▶ Nastavi':'❚❚ Pauza')+'</button><div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+(e.pg?' · <span class="pgt">program</span>':'')+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">'+(d.circ?'Krug':'Serija')+' '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
+ return '<div class="wbar"><button class="btn ghost" id="wback" type="button">‹ Plan</button><b>'+esc(d.name)+'</b><span class="el" id="elapsed" aria-label="Proteklo vrijeme">'+elTxt()+'</span><button class="pz'+(W.paused?' on':'')+'" id="pause" type="button" aria-label="'+(W.paused?'Nastavi':'Pauza')+'">'+(W.paused?'▶':'❚❚')+'</button></div><div class="bar"><div style="width:'+Math.round(doneN/tot*100)+'%"></div></div><div class="card live'+(W.ph=='rest'?' resting':'')+'"><p class="mute" style="margin:0">Vježba '+(W.i+1)+' od '+d.ex.length+(e.pg?' · <span class="pgt">program</span>':'')+'</p><h2>'+e.n+'</h2>'+anim(e.n,'big')+'<div class="dots">'+Array.from({length:e.sets},(_,j)=>'<i class="'+(j<W.set-1?'on':'')+'"></i>').join('')+'</div><p class="mute">'+(d.circ?'Krug':'Serija')+' '+W.set+' od '+e.sets+'</p>'+mid+'</div>'+
  '<div class="card howto"><h3>Kako se radi</h3><p>'+e.o+'</p><p><strong>Savjet:</strong> '+e.s+'</p><p>'+ytLink(e.n)+'</p></div><button class="btn ghost" id="quit">Prekini trening</button>';
 }
 function bindGo(){
