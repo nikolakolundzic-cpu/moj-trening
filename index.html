@@ -563,7 +563,7 @@ function vPro(){
   sr('Tajmer kreće sam',tg('auto',S.auto!==false))+
   sr('Zagrijavanje i istezanje',tg('autoWS',!!S.autoWS))+
   sr('Uputstva za vježbe',tg('hideHow',!S.hideHow))+
-  sr('Glasovno vođenje',tg('voice',!!S.voice))+
+  sr('Glasovno vođenje',tg('voice',!!S.voice))+(S.voice?sr('Probaj glas','<button type="button" class="btn ghost" id="vtest" style="min-height:34px;padding:4px 12px;font-size:15px">Pusti</button>'):'')+
   pref('Zvuk','sound',[['on','Zvuk'],['vib','Vibracija'],['off','Bez']],'on')+
   pref('Pauze','restAdj',[['-15','Kraće'],['0','Normalno'],['15','Duže']],'0'),
   'Tajmer sam kreće posle odmora. Zagrijavanje se pusti prije treninga, a istezanje posle. Zadnje 3 sekunde se čuje zvuk, a ekran se ne gasi. Glas najavljuje sledeću vježbu i kaže kad ostane 10 sekundi.')+
@@ -598,6 +598,7 @@ function bindPro(){
  bindSkin();applySkin();
  document.querySelectorAll('[data-tg]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.tg;
   if(k=='auto'){if(S.auto===false)delete S.auto;else S.auto=false}else if(k=='autoWS'){if(S.autoWS)delete S.autoWS;else S.autoWS=true}else if(k=='hideHow'){if(S.hideHow)delete S.hideHow;else S.hideHow=true}else if(k=='voice'){if(S.voice)delete S.voice;else{S.voice=true;say('Glasovno vođenje je uključeno')}}else return;save();render()}));
+ {const vt=$('#vtest');if(vt)vt.addEventListener('click',()=>{vUnlock();say('Sledeće: sklekovi, 40 sekundi',1)})}
  {const g=$('#gpc');if(g)g.addEventListener('click',e=>{const b=e.target.closest('[data-gp]');if(!b)return;const v=b.dataset.gp;if(!v)delete S.goalProg;else if(!S.goalProg||S.goalProg.id!=v)S.goalProg={id:v,start:wkStart(0)};save();render()})}
  document.querySelectorAll('[data-pref]').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('[data-pv]');if(!b)return;const k=g.dataset.pref,v=b.dataset.pv;
   const val=k=='autoWS'?v=='1':(k=='restAdj'||k=='kgStep')?+v:v;if(!val||val==='norm'||val==='on'||val==='auto')delete S[k];else S[k]=val;
@@ -995,10 +996,15 @@ let wT0=null,wEnd=null;
 const fmtE=ms=>{const t=Math.max(0,Math.floor(ms/1000)),h=Math.floor(t/3600),m=Math.floor(t%3600/60),x=t%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
 const elTxt=()=>{const e=fmtE((wEnd||(W&&W.paused&&W.pT)||Date.now())-(wT0||Date.now())),p=S.profile;return isDaily(p)&&W&&W.mode!='str'?e+' <small>/ '+(p.min||20)+':00</small>':e};
 setInterval(()=>{const el=document.getElementById('elapsed');if(el&&wT0&&!wEnd)el.innerHTML=elTxt()},500);
-function startW(k,noWarm){wake();if(!noWarm||!wT0){wT0=Date.now();wEnd=null}if(S.autoWS&&!noWarm){W={k:-1,mode:'warm',next:k,d:warmDay(),i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}setTab('go');return}const d=withMake(build(S.profile))[k];W={k,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}say(S.voice?'Prva vježba: '+d.ex[0].n+', '+sayDose(d.ex[0]):'');setTab('go')}
+function startW(k,noWarm){wake();if(!noWarm||!wT0){wT0=Date.now();wEnd=null}if(S.autoWS&&!noWarm){W={k:-1,mode:'warm',next:k,d:warmDay(),i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}say('Zagrijavanje. Prva vježba: '+W.d.ex[0].n);setTab('go');return}const d=withMake(build(S.profile))[k];W={k,d,i:0,set:1,ph:'ready',t:0,rec:{}};try{actx=actx||new AudioContext()}catch(e){}say(S.voice?'Prva vježba: '+d.ex[0].n+', '+sayDose(d.ex[0]):'');setTab('go')}
 function stopTick(){clearInterval(tick);tick=null}
 let vVoice=null;
-function say(t,force){if(!S.voice&&!force)return;try{const ss=window.speechSynthesis;if(!ss)return;if(!vVoice){const V=ss.getVoices();vVoice=['sr','hr','bs'].map(l=>V.find(v=>v.lang.toLowerCase().startsWith(l))).find(Boolean)||null}ss.cancel();if(!t)return;const u=new SpeechSynthesisUtterance(t);if(vVoice){u.voice=vVoice;u.lang=vVoice.lang}else u.lang='hr-HR';u.rate=1.05;ss.speak(u)}catch(e){}}
+let vUnl=0;
+function vUnlock(){if(vUnl)return;try{const ss=window.speechSynthesis;if(!ss)return;const u=new SpeechSynthesisUtterance(' ');u.volume=0;ss.speak(u);vUnl=1}catch(e){}}
+document.addEventListener('click',()=>{if(S&&S.voice)vUnlock()},true);
+function say(t,force,queue){if(!S.voice&&!force)return;try{const ss=window.speechSynthesis;if(!ss)return;if(!vVoice){const V=ss.getVoices();vVoice=['sr','hr','bs'].map(l=>V.find(v=>v.lang.toLowerCase().startsWith(l))).find(Boolean)||null}
+ if(!t){ss.cancel();return}const go=()=>{try{ss.resume()}catch(e){}const u=new SpeechSynthesisUtterance(t);if(vVoice){u.voice=vVoice;u.lang=vVoice.lang}else u.lang='hr-HR';u.rate=1.05;u.volume=1;ss.speak(u)};
+ if(!queue&&(ss.speaking||ss.pending)){ss.cancel();setTimeout(go,120)}else go()}catch(e){}}
 try{speechSynthesis.onvoiceschanged=()=>{vVoice=null}}catch(e){}
 const sayDose=e=>e.t?e.sec+' sekundi':e.reps+' ponavljanja';
 function announce(ph,sec){if(!S.voice||!W)return;const e=W.d.ex[W.i];if(!e)return;if(ph=='rest')say('Odmor '+sec+' sekundi. Sledeće: '+e.n+', '+sayDose(e));else if(ph=='work')say('Kreni! '+e.n)}
@@ -1009,7 +1015,7 @@ function swapEx(){const e=W.d.ex[W.i];if(!e||!e.g||!S.profile)return false;const
  c.sort((a,b)=>Math.abs(a.d-e.d)-Math.abs(b.d-e.d)||(a.eq==e.eq?-1:0));const n=c[0];W.sw[W.i].push(n.n);
  const ne=Object.assign({},n,{sets:e.sets});if(n.t){delete ne.reps;ne.sec=e.t?e.sec:(W.d.ex.find(x=>x.t)||{sec:30}).sec}else{delete ne.sec;ne.reps=e.t?(W.d.circ?12:10):e.reps}
  ['mk','pg'].forEach(k=>{if(e[k])ne[k]=e[k]});W.d.ex[W.i]=ne;return true}
-function run(sec,ph,keep){stopTick();W.ph=ph;W.t=sec;if(!keep){W.tt=sec;W.paused=0;announce(ph,sec)}W.end=Date.now()+sec*1000;render();tick=setInterval(()=>{const nt=Math.max(0,Math.ceil((W.end-Date.now())/1000));if(nt===W.t)return;W.t=nt;if(W.t==10&&W.tt>=20)say('Još 10 sekundi');if(W.t>0&&W.t<=3)tone(660,.08);if(W.t<=0){stopTick();beep();if(ph=='rest'){W.ph='ready';const ne=W.d.ex[W.i];if(S.auto!==false&&ne&&ne.t){run(ne.sec,'work');return}}else{W.rec=W.rec||{};(W.rec[W.i]=W.rec[W.i]||[]).push({r:sec});afterSet()}render();return}const el=$('#clock');if(el)el.textContent=fmt(W.t);const rg=$('#ring');if(rg)rg.style.setProperty('--p',W.t/W.tt)},250)}
+function run(sec,ph,keep){stopTick();W.ph=ph;W.t=sec;if(!keep){W.tt=sec;W.paused=0;announce(ph,sec)}W.end=Date.now()+sec*1000;render();tick=setInterval(()=>{const nt=Math.max(0,Math.ceil((W.end-Date.now())/1000));if(nt===W.t)return;W.t=nt;if(W.t==10&&W.tt>=20)say('Još 10 sekundi',0,1);if(W.t>0&&W.t<=3)tone(660,.08);if(W.t<=0){stopTick();beep();if(ph=='rest'){W.ph='ready';const ne=W.d.ex[W.i];if(S.auto!==false&&ne&&ne.t){run(ne.sec,'work');return}}else{W.rec=W.rec||{};(W.rec[W.i]=W.rec[W.i]||[]).push({r:sec});afterSet()}render();return}const el=$('#clock');if(el)el.textContent=fmt(W.t);const rg=$('#ring');if(rg)rg.style.setProperty('--p',W.t/W.tt)},250)}
 const fmt=s=>s>=60?Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):String(s);
 function finishW(){if(W&&W.mode=='warm'){const k=W.next;stopTick();W=null;startW(k,1);return}stopTick();unwake();wEnd=Date.now();W.ph='done';W.paused=0;say(W.mode=='str'?'Istezanje je završeno':'Bravo, trening je završen');if(W.k>=0)S.done.push({d:today(),k:W.k});if(W.mode=='quick'){S.quick=S.quick||{};S.quick[today()]=1}save();render()}
 function cNext(){const L=W.d.ex.length,R=Math.max(...W.d.ex.map(x=>x.sets));let i=W.i,r=W.set;
