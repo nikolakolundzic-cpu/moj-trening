@@ -4,7 +4,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 try { firebase.initializeApp(self.firebaseConfig); firebase.messaging(); } catch (e) {}
 
-const CACHE = 'trening-v5';
+const CACHE = 'trening-v6';
 const SHELL = ['./', './index.html', './firebase-config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
