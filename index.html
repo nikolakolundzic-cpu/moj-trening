@@ -376,9 +376,9 @@ const fb=initializeApp(firebaseConfig),auth=getAuth(fb),fdb=initializeFirestore(
 const $=s=>document.querySelector(s);
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const EMPTY=()=>({profile:null,start:null,weights:[],done:[],skin:null});
-let S=EMPTY(),uid=null,authReady=false,saveT=null,saving=Promise.resolve(),lastSaved='',unsub=null;
+let pre=false,preDirty=false,S=EMPTY(),uid=null,authReady=false,saveT=null,saving=Promise.resolve(),lastSaved='',unsub=null;
 const canon=o=>JSON.stringify(o,(k,v)=>v&&typeof v=='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v);
-function doSave(){if(!uid)return;const u=uid;if(S.remind&&S.profile){const days={},td=today();for(const off of [0,1,2,3]){const plan=build(S.profile),wk=wkStart(off);plan.forEach((d,i)=>{const dt=dateOf(wk,i,d.dn);if(dt&&dt>=td)days[dt]=d.name})}S.remind.days=days;S.remind.until=addD(wkStart(3),6);const wt={};build(S.profile).forEach(d=>{wt[DIDX[d.dn]]=d.name});S.remind.week=wt}const body=JSON.parse(JSON.stringify(S)),js=canon(body);if(js===lastSaved)return;lastSaved=js;saving=saving.then(()=>setDoc(doc(fdb,'users',u),body)).catch(e=>console.log('[trening] save',e));saveStats(u)}
+function doSave(){if(!uid)return;if(pre){preDirty=true;return}const u=uid;if(S.remind&&S.profile){const days={},td=today();for(const off of [0,1,2,3]){const plan=build(S.profile),wk=wkStart(off);plan.forEach((d,i)=>{const dt=dateOf(wk,i,d.dn);if(dt&&dt>=td)days[dt]=d.name})}S.remind.days=days;S.remind.until=addD(wkStart(3),6);const wt={};build(S.profile).forEach(d=>{wt[DIDX[d.dn]]=d.name});S.remind.week=wt}const body=JSON.parse(JSON.stringify(S)),js=canon(body);if(js===lastSaved)return;lastSaved=js;snapPut();saving=saving.then(()=>setDoc(doc(fdb,'users',u),body)).catch(e=>console.log('[trening] save',e));saveStats(u)}
 let lastStats='';function saveStats(u){if(!S.profile)return;const p=S.profile,wk={};for(let o=0;o>=-3;o--){const w=wkStart(o);if(!S.start||addD(w,6)>=S.start)wk[w]=summ(o).okp}
  const st={upd:today(),start:S.start||null,mode:p.mode||'klas',goal:p.goal||'',lvl:String(p.lvl||''),days:+p.days||0,min:+p.min||0,trainings:trCount(),wk};const js=canon(st);if(js===lastStats)return;lastStats=js;
  saving=saving.then(()=>setDoc(doc(fdb,'stats',u),st)).catch(e=>console.log('[trening] stats',e))}
@@ -1179,20 +1179,30 @@ function bindLogin(){
  $('#gg').addEventListener('click',()=>{const p=new GoogleAuthProvider();signInWithPopup(auth,p).catch(e=>{if(e.code=='auth/popup-blocked')signInWithRedirect(auth,p);else fail(e)})});
  $('#fp').addEventListener('click',()=>{const em=$('#em').value.trim();if(!em)return msg('Prvo upiši email iznad.');sendPasswordResetEmail(auth,em).then(()=>msg('Poslao sam link za novu lozinku na '+em+'.',1)).catch(fail)});
 }
+// Brzi start: odmah prikaži zadnje sačuvano stanje sa telefona, dok se prijava i podaci provjeravaju u pozadini.
+function snapPut(){try{if(uid)localStorage.setItem('trening-snap',JSON.stringify({uid,S}))}catch(e){}}
+function snapClear(){try{localStorage.removeItem('trening-snap')}catch(e){}}
+try{const sn=JSON.parse(localStorage.getItem('trening-snap')||'null');if(sn&&sn.uid&&sn.S&&sn.S.profile){uid=sn.uid;S=Object.assign(EMPTY(),sn.S);lastSaved=canon(sn.S);pre=true;authReady=true;if(S.skin){skin=S.skin;applySkin()}tab='plan';render()}}catch(e){console.log('[trening] snap',e)}
 onAuthStateChanged(auth,async u=>{
  authReady=true;
  if(unsub){unsub();unsub=null}
- if(!u){uid=null;S=EMPTY();lastSaved='';render();return}
+ if(!u){pre=false;preDirty=false;uid=null;S=EMPTY();lastSaved='';snapClear();render();return}
+ const wasPre=pre&&uid===u.uid,before=wasPre?canon(S):'';
+ if(pre&&!wasPre){pre=false;preDirty=false;uid=null;S=EMPTY();render()}
  if(!S.profile)$('#app').innerHTML='<p class="mute">Učitavam tvoje podatke…</p>';
- try{let snap=null;try{snap=await getDocFromCache(doc(fdb,'users',u.uid))}catch(e){}if(!snap||!snap.exists())snap=await getDoc(doc(fdb,'users',u.uid));S=Object.assign(EMPTY(),snap.exists()?snap.data():{});lastSaved=snap.exists()?canon(snap.data()):''}
+ try{let snap=null;try{snap=await getDocFromCache(doc(fdb,'users',u.uid))}catch(e){}if(!snap||!snap.exists())snap=await getDoc(doc(fdb,'users',u.uid));
+  const L=snap.exists()?canon(snap.data()):'';if(!(wasPre&&preDirty))S=Object.assign(EMPTY(),snap.exists()?snap.data():{});lastSaved=L}
  catch(e){console.log('[trening] load',e);
+  if(wasPre){uid=u.uid;pre=false;if(preDirty){preDirty=false;doSave()}return}
   $('#app').innerHTML='<div class="card"><h3>Ne mogu da učitam tvoje podatke</h3><p class="mute">Provjeri internet pa probaj ponovo. Ništa nije izgubljeno.</p><button class="btn" id="retry">Probaj ponovo</button></div>';
   $('#retry').addEventListener('click',()=>location.reload());return}
- uid=u.uid;
+ uid=u.uid;pre=false;
+ if(preDirty){preDirty=false;doSave()}else snapPut();
  unsub=onSnapshot(doc(fdb,'users',uid),snap=>{
   if(!snap.exists()||snap.metadata.hasPendingWrites||saveT||W||editDay!==null||tab=='pro')return;
-  const js=canon(snap.data());if(js===lastSaved)return;lastSaved=js;S=Object.assign(EMPTY(),snap.data());render()},e=>console.log('[trening] sync',e));
+  const js=canon(snap.data());if(js===lastSaved)return;lastSaved=js;S=Object.assign(EMPTY(),snap.data());snapPut();render()},e=>console.log('[trening] sync',e));
  if(S.skin){skin=S.skin;try{localStorage.setItem('trening-skin',skin)}catch(e){}applySkin()}
+ if(wasPre){if(canon(S)!==before&&!W&&editDay===null)render();return}
  tab=S.profile?'plan':'pro';render();
 });
 function firstAct(){let best=null;const plan=S.profile?build(S.profile,0,1):[];
