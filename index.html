@@ -380,7 +380,7 @@ let pre=false,preDirty=false,S=EMPTY(),uid=null,authReady=false,saveT=null,savin
 const canon=o=>JSON.stringify(o,(k,v)=>v&&typeof v=='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v);
 function doSave(){if(!uid)return;if(pre){preDirty=true;return}const u=uid;if(S.remind&&S.profile){const days={},td=today();for(const off of [0,1,2,3]){const plan=build(S.profile),wk=wkStart(off);plan.forEach((d,i)=>{const dt=dateOf(wk,i,d.dn);if(dt&&dt>=td)days[dt]=d.name})}S.remind.days=days;S.remind.until=addD(wkStart(3),6);const wt={};build(S.profile).forEach(d=>{wt[DIDX[d.dn]]=d.name});S.remind.week=wt}const body=JSON.parse(JSON.stringify(S)),js=canon(body);if(js===lastSaved)return;lastSaved=js;snapPut();saving=saving.then(()=>setDoc(doc(fdb,'users',u),body)).catch(e=>console.log('[trening] save',e));saveStats(u)}
 let lastStats='';function saveStats(u){if(!S.profile)return;const p=S.profile,wk={};for(let o=0;o>=-3;o--){const w=wkStart(o);if(!S.start||addD(w,6)>=S.start)wk[w]=summ(o).okp}
- const st={upd:today(),start:S.start||null,mode:p.mode||'klas',goal:p.goal||'',lvl:String(p.lvl||''),days:+p.days||0,min:+p.min||0,trainings:trCount(),wk};const js=canon(st);if(js===lastStats)return;lastStats=js;
+ const st={upd:today(),start:S.start||null,mode:p.mode||'klas',goal:p.goal||'',goals:goalsOf(p),lvl:String(p.lvl||''),days:+p.days||0,min:+p.min||0,trainings:trCount(),wk};const js=canon(st);if(js===lastStats)return;lastStats=js;
  saving=saving.then(()=>setDoc(doc(fdb,'stats',u),st)).catch(e=>console.log('[trening] stats',e))}
 function flush(){if(saveT){clearTimeout(saveT);saveT=null;doSave()}}
 const save=()=>{if(!uid)return;clearTimeout(saveT);saveT=setTimeout(()=>{saveT=null;doSave()},500)};
@@ -456,7 +456,11 @@ const T={
 };
 const DAYS={2:[['Ponedeljak','fa'],['Četvrtak','fb']],3:[['Ponedeljak','noge'],['Srijeda','gor'],['Petak','fb']],4:[['Ponedeljak','noge'],['Utorak','gor'],['Četvrtak','kar'],['Petak','fa']],5:[['Ponedeljak','noge'],['Utorak','gor'],['Srijeda','kar'],['Petak','fa'],['Subota','fb']]};
 const GOAL={mrs:{n:'Mršavljenje',sets:3,reps:15,rest:40,sec:30},zat:{n:'Zatezanje',sets:3,reps:12,rest:60,sec:30},def:{n:'Definicija mišića',sets:4,reps:10,rest:75,sec:40},sna:{n:'Snaga',sets:4,reps:8,rest:90,sec:30},kon:{n:'Kondicija',sets:3,reps:15,rest:30,sec:40},zdr:{n:'Zdravlje i pokretljivost',sets:2,reps:10,rest:75,sec:30}};
-const mature=p=>p.goal=='zdr'||(+p.age||0)>=50;
+const goalsOf=p=>{const g=(Array.isArray(p.goals)?p.goals:[]).filter(x=>GOAL[x]);return g.length?g:[GOAL[p.goal]?p.goal:'zat']};
+const hasG=(p,g)=>goalsOf(p).includes(g);
+const gp=p=>{const L=goalsOf(p).map(g=>GOAL[g]),av=k=>Math.round(L.reduce((a,x)=>a+x[k],0)/L.length);return {n:L.map(x=>x.n).join(' + '),sets:av('sets'),reps:av('reps'),rest:Math.round(av('rest')/5)*5,sec:Math.round(av('sec')/5)*5}};
+const gAvg=(p,M,d)=>{const v=goalsOf(p).map(g=>M[g]===undefined?d:M[g]);return v.reduce((a,x)=>a+x,0)/v.length};
+const mature=p=>hasG(p,'zdr')||(+p.age||0)>=50;
 const LVL={1:'Početnik',2:'Srednji',3:'Napredni'};
 
 EX.push(
@@ -498,7 +502,7 @@ const isDaily=p=>p&&p.mode=='dnev';
 const WDN=['Ponedeljak','Utorak','Srijeda','Četvrtak','Petak','Subota','Nedelja'];
 const daysOf=p=>isDaily(p)?(p.style=='split'?SPLITD.map((x,i)=>[x.dn,'s'+i]):p.style=='reps'?DAILY.map((x,i)=>[x[0],'r'+i]):DAILY):(Array.isArray(p.wd)&&p.wd.length==p.days?DAYS[p.days].map(([dn,k],i)=>[WDN[p.wd.slice().sort((a,b)=>a-b)[i]],k]):DAYS[p.days]);
 const ckey=p=>isDaily(p)?'d'+(p.min||20)+(p.style=='reps'?'r':p.style=='split'?'s':''):String(p.days);
-const normP=p=>{p=JSON.parse(JSON.stringify(p));if(p.loc=='buc'){p.loc='kuca';p.eq=['b']}p.eq=p.eq||[];p.mode=p.mode||'klas';p.min=p.min||20;p.style=p.style||'mix';if(!Array.isArray(p.wd)||p.wd.length!=p.days)p.wd=(DAYS[p.days]||DAYS[3]).map(([dn])=>DIDX[dn]);p.job=p.job||'sjed';p.sex=p.sex||'';return p};
+const normP=p=>{p=JSON.parse(JSON.stringify(p));if(p.loc=='buc'){p.loc='kuca';p.eq=['b']}p.eq=p.eq||[];p.mode=p.mode||'klas';p.min=p.min||20;p.style=p.style||'mix';if(!Array.isArray(p.wd)||p.wd.length!=p.days)p.wd=(DAYS[p.days]||DAYS[3]).map(([dn])=>DIDX[dn]);p.job=p.job||'sjed';p.sex=p.sex||'';p.goals=goalsOf(p);p.goal=p.goals[0];return p};
 const CH={PU:['Sklek','Sklek na koljenima','Sklek uz zid'],JS:['Skok iz čučnja','Čučanj','Čučanj do stolice'],JL:['Skok iz iskoraka','Iskorak unazad','Glute most'],
  FL:['Makaze (flutter kicks)','Mrtva buba','Bird-dog'],LR:['Podizanje nogu ležeći','Makaze (flutter kicks)','Mrtva buba'],PL:['Plank na podlakticama','Bird-dog','Mrtva buba'],
  MC:['Planinar (mountain climbers)','Marširanje u mjestu'],BU:['Burpee','Planinar (mountain climbers)','Jumping jacks','Marširanje u mjestu'],JJ:['Jumping jacks','Boks u mjestu','Marširanje u mjestu'],
@@ -531,19 +535,19 @@ const bmi=p=>p.w/((p.h/100)**2);
 const bmiTxt=b=>b<18.5?'ispod normale':b<25?'normalna težina':b<30?'povećana težina':'gojaznost';
 const week=()=>S.start?Math.max(1,Math.floor((Date.now()-new Date(S.start+'T12:00:00'))/6048e5)+1):1;
 
-function allowedEx(p){const low=bmi(p)>=30||p.age>=50||p.goal=='zdr'||p.prob.includes('koljena'),lvl=p.goal=='zdr'?Math.min(2,+p.lvl):+p.lvl;const Q=eqSet(p);return e=>Q.includes(e.eq)&&e.d<=lvl&&!(low&&e.hi)&&!e.st.some(s=>p.prob.includes(s))}
+function allowedEx(p){const low=bmi(p)>=30||p.age>=50||hasG(p,'zdr')||p.prob.includes('koljena'),lvl=hasG(p,'zdr')?Math.min(2,+p.lvl):+p.lvl;const Q=eqSet(p);return e=>Q.includes(e.eq)&&e.d<=lvl&&!(low&&e.hi)&&!e.st.some(s=>p.prob.includes(s))}
 function poolFor(p,g){const ok=allowedEx(p);let c=EX.filter(e=>e.g==g&&ok(e));
  if(!c.length)c=EX.filter(e=>e.g==g&&!e.hi&&!e.st.length&&eqSet(p).includes(e.eq));
  return c.sort((a,b)=>(b.d-a.d)||(b.eq>a.eq?1:-1))}
 function build(p,raw,nb){
  const lvl=+p.lvl,cnt={};
- const G=GOAL[p.goal],bonus=nb?0:Math.min(3,Math.floor(qualW()/({slow:3,fast:1})[S.prog]||qualW()/2)),adj=nb?0:(S.adj||0);
+ const G=gp(p),bonus=nb?0:Math.min(3,Math.floor(qualW()/({slow:3,fast:1})[S.prog]||qualW()/2)),adj=nb?0:(S.adj||0);
  const sets=Math.max(2,G.sets-(lvl==1?1:0));
  const D=isDaily(p),R=p.min==30?4:3,DS=p.min==30?45:40;
  const dz=e=>{if(D)return Object.assign({},e,{t:1,sets:R,reps:0,sec:Math.max(20,DS+(lvl==1?-5:lvl==3?5:0)+bonus*5+adj*5)});const sec=e.t?Math.max(15,G.sec+(lvl==1?-10:lvl==3?15:0)+bonus*5+adj*5):0;return Object.assign({},e,{sets:e.g=='kar'?Math.min(sets,3):sets,reps:e.t?0:Math.max(5,G.reps+bonus*2+adj*2),sec})};
  return daysOf(p).map(([dn,k],di)=>{
   const used=new Set(),slots=T[k].s.slice();
-  if(D){if(p.min==30)slots.push(T[k].x)}else if((p.goal=='mrs'||p.goal=='kon'||p.goal=='def')&&k!='kar')slots.push('kar');
+  if(D){if(p.min==30)slots.push(T[k].x)}else if(['mrs','kon','def'].some(g=>hasG(p,g))&&k!='kar')slots.push('kar');
   const rec=isReps(p)?RDAY(p,di).c.concat(p.min==30?[RDAY(p,di).x]:[]).map(ch=>pickChain(p,ch,used)):slots.map(g=>{const c=poolFor(p,g);let i=cnt[g]||0,e,tries=0;
    do{e=c[i%c.length];i++;tries++}while(used.has(e.n)&&tries<c.length);
    cnt[g]=i;if(used.has(e.n)){const ok=allowedEx(p),alt=[g,'core','noge','vuc','gur','kar'].map(x=>EX.filter(z=>z.g==x&&ok(z)&&!used.has(z.n))).find(a=>a.length);if(alt)e=alt[0]}used.add(e.n);return e});
@@ -551,7 +555,7 @@ function build(p,raw,nb){
   if(mature(p)&&!isReps(p)&&!(S.custom&&S.custom[ckey(p)]&&S.custom[ckey(p)][di])){const c=poolFor(p,'bal').filter(e=>!used.has(e.n));if(c.length){const e=c[di%c.length];used.add(e.n);const ci=D?rec.findIndex(x=>x.g=='core'):-1;if(ci>=0){rec[ci]=e;slots[ci]='bal'}else{rec.push(e);slots.push('bal')}}}
   const cu=!raw&&S.custom&&S.custom[ckey(p)]&&S.custom[ckey(p)][di];
   const list=cu?cu.map(n=>EX.find(e=>e.n==n)).filter(Boolean):rec;
-  return {dn,name:T[k].n,ex:(list.length?list:rec).map(dz),rec:rec.map(e=>e.n),slots,custom:!!(cu&&list.length),rest:Math.max(10,(D?(p.goal=='zdr'?30:mature(p)?25:p.min==30?15:20):G.rest)+(+S.restAdj||0)),circ:D};
+  return {dn,name:T[k].n,ex:(list.length?list:rec).map(dz),rec:rec.map(e=>e.n),slots,custom:!!(cu&&list.length),rest:Math.max(10,(D?(hasG(p,'zdr')?30:mature(p)?25:p.min==30?15:20):G.rest)+(+S.restAdj||0)),circ:D};
  });
 }
 const dose=e=>e.sets+' × '+(e.t?e.sec+' s':e.reps+(e.g=='noge'&&/Iskorak|jednoj/.test(e.n)?' po nozi':''));
@@ -567,7 +571,7 @@ $('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)
 function header(){
  const p=S.profile;
  $('#ttl').textContent=p&&p.name?p.name:'Moj trening';
- $('#sub').textContent=p?GOAL[p.goal].n+' · '+LVL[p.lvl]+' · '+(isDaily(p)?(p.style=='split'?'5 dana nedeljno · ':'svaki dan ')+(p.min||20)+' min':p.days+' dana nedeljno'):'Program vježbi napravljen po tvojim mjerama';
+ $('#sub').textContent=p?gp(p).n+' · '+LVL[p.lvl]+' · '+(isDaily(p)?(p.style=='split'?'5 dana nedeljno · ':'svaki dan ')+(p.min||20)+' min':p.days+' dana nedeljno'):'Program vježbi napravljen po tvojim mjerama';
  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));
 }
 
@@ -618,14 +622,14 @@ function vPro(){
   'Koliko brzo plan postaje teži i za koliko kg aplikacija predlaže da povećaš težinu.')+
  (S.profile?grp('Program sa ciljem','<div class="srow stk"><span class="sl">Cilj</span><div class="chips" id="gpc">'+[['','Bez']].concat(Object.entries(PGM).filter(([k,v])=>!v.eq||eqSet(S.profile).includes(v.eq)).map(([k,v])=>[k,v.n])).map(([k,t])=>'<button type="button" class="chip'+(((S.goalProg||{}).id||'')==k?' on':'')+'" data-gp="'+k+'">'+t+'</button>').join('')+'</div></div>',
   S.goalProg&&PGM[S.goalProg.id]?PGM[S.goalProg.id].n+': nedelja '+Math.min(pgWeek(),PGM[S.goalProg.id].w.length)+' od '+PGM[S.goalProg.id].w.length+'. Vježbe programa se dodaju u treninge.':'Izaberi cilj i aplikacija ga dodaje u tvoje treninge, nedelju po nedelju.'+(eqSet(S.profile).includes('p')?'':' Za „Prvi zgib” u opremi označi vratilo.')):'')+(uid?vRemind():'')+(uid&&isOwner()?'<div class="card"><h3>Pregled korisnika</h3><p class="mute">Vidiš samo anonimnu statistiku, bez imena, emaila i težine.</p><button class="btn ghost" type="button" id="ownl">Učitaj pregled</button><div id="ownv"></div></div>':'')+
- (uid?'<p class="ios-h">Nalog</p><div class="card" style="margin-top:0"><p class="mute" id="acc"></p>'+(auth.currentUser&&!auth.currentUser.emailVerified?'<div class="verif"><p style="margin:0 0 8px"><b>Email nije potvrđen.</b> Potvrda služi da niko drugi ne može koristiti tvoj email.</p><div class="acts" style="justify-content:flex-start;margin:0"><button class="btn" type="button" id="vsend">Pošalji link za potvrdu</button><button class="btn ghost" type="button" id="vdone">Potvrdio sam</button></div><p class="mute" id="vmsg" style="margin-bottom:0"></p></div>':'')+'<div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="lo" type="button">Odjavi se</button><button class="btn ghost warn" id="delacc" type="button">Obriši nalog</button></div><p class="mute" id="delmsg"></p><p class="mute" style="margin-bottom:0">Vlasniku aplikacije se šalje samo anonimna statistika: broj treninga, procenat po nedelji, cilj i način treninga. Bez imena, emaila, težine i mjera.</p></div>':'')+(S.profile?'<p class="ios-h">Profil</p><details class="card pf" style="margin-top:0"><summary><span><b>Tvoji podaci i plan</b><br><span class="mute">'+esc([p.name,p.w&&p.w+' kg',p.h&&p.h+' cm',p.age&&p.age+' god.',(GOAL[p.goal]||{}).n].filter(Boolean).join(' · '))+'</span></span><span class="chev" aria-hidden="true">›</span></summary><form id="f">':'<form class="card" id="f"><h2>Hajde da počnemo</h2><p class="mute">Na osnovu ovoga pravim nedeljni plan.</p>')+
+ (uid?'<p class="ios-h">Nalog</p><div class="card" style="margin-top:0"><p class="mute" id="acc"></p>'+(auth.currentUser&&!auth.currentUser.emailVerified?'<div class="verif"><p style="margin:0 0 8px"><b>Email nije potvrđen.</b> Potvrda služi da niko drugi ne može koristiti tvoj email.</p><div class="acts" style="justify-content:flex-start;margin:0"><button class="btn" type="button" id="vsend">Pošalji link za potvrdu</button><button class="btn ghost" type="button" id="vdone">Potvrdio sam</button></div><p class="mute" id="vmsg" style="margin-bottom:0"></p></div>':'')+'<div class="acts" style="justify-content:flex-start"><button class="btn ghost" id="lo" type="button">Odjavi se</button><button class="btn ghost warn" id="delacc" type="button">Obriši nalog</button></div><p class="mute" id="delmsg"></p><p class="mute" style="margin-bottom:0">Vlasniku aplikacije se šalje samo anonimna statistika: broj treninga, procenat po nedelji, cilj i način treninga. Bez imena, emaila, težine i mjera.</p></div>':'')+(S.profile?'<p class="ios-h">Profil</p><details class="card pf" style="margin-top:0"><summary><span><b>Tvoji podaci i plan</b><br><span class="mute">'+esc([p.name,p.w&&p.w+' kg',p.h&&p.h+' cm',p.age&&p.age+' god.',gp(p).n].filter(Boolean).join(' · '))+'</span></span><span class="chev" aria-hidden="true">›</span></summary><form id="f">':'<form class="card" id="f"><h2>Hajde da počnemo</h2><p class="mute">Na osnovu ovoga pravim nedeljni plan.</p>')+
  '<label for="nm">Ime</label><input id="nm" value="'+esc(p.name)+'" autocomplete="given-name">'+
  '<div class="row"><div><label for="w">Težina kg</label><input id="w" type="number" inputmode="decimal" min="30" max="250" step="0.1" required value="'+esc(p.w)+'"></div>'+
  '<div><label for="h">Visina cm</label><input id="h" type="number" inputmode="numeric" min="120" max="220" required value="'+esc(p.h)+'"></div>'+
  '<div><label for="ag">Godine</label><input id="ag" type="number" inputmode="numeric" min="14" max="90" required value="'+esc(p.age)+'"></div></div>'+
  sr('Pol',chips('sex',[['m','Muški'],['z','Ženski']]))+
  sr('Posao',chips('job',[['sjed','Sjedim'],['noge','Stojim'],['fiz','Težak']]))+
- '<label>Cilj</label>'+chips('goal',Object.entries(GOAL).map(([k,v])=>[k,v.n]))+'<p class="mute" style="margin:5px 0 0">Definicija: 4×10 i kratki kardio na kraju.</p>'+
+ '<label>Cilj <span class="mute" style="font-weight:400">(može više)</span></label>'+chips('goals',Object.entries(GOAL).map(([k,v])=>[k,v.n]),1)+'<p class="mute" style="margin:5px 0 0">Kad izabereš više ciljeva, serije, ponavljanja i pauze su između njih, a kardio ide ako je među njima mršavljenje, kondicija ili definicija.</p>'+
  sr('Nivo',chips('lvl',Object.entries(LVL)))+
  sr('Način',chips('mode',[['klas','Klasični'],['dnev','Dnevni']]))+
  '<div id="f_days"'+(p.mode=='dnev'?' hidden':'')+'>'+sr('Dani',chips('wd',[[0,'P'],[1,'U'],[2,'S'],[3,'Č'],[4,'P'],[5,'S'],[6,'N']],1))+'<p class="mute" style="margin:4px 0 0">Izaberi 2 do 5 dana: P U S Č P S N.</p>'+'</div>'+
@@ -663,7 +667,7 @@ function bindPro(){
   S=EMPTY();lastSaved='';render()})}
  {const o=$('#ownl');if(o)o.addEventListener('click',async()=>{const v=$('#ownv');v.textContent='Učitavam…';try{const q=await getDocs(collection(fdb,'stats'));const L=q.docs.map(x=>x.data()).sort((a,b)=>(b.upd||'')<(a.upd||'')?-1:1),td=today(),w7=addD(td,-7),cw=wkStart(0);
    const act=L.filter(x=>(x.upd||'')>=w7),pc=act.map(x=>(x.wk||{})[cw]).filter(x=>typeof x=='number'),avg=pc.length?Math.round(pc.reduce((a,b)=>a+b,0)/pc.length):0;
-   v.innerHTML='<div class="stats" style="margin:12px 0">'+stat(L.length,'korisnika ukupno')+stat(act.length,'aktivnih u 7 dana')+stat(avg+'%','prosjek ove nedelje')+'</div><table>'+L.map((x,i)=>'<tr><td>Korisnik '+(i+1)+'<br><span class="mute">'+esc((GOAL[x.goal]||{}).n||'')+' · '+(x.mode=='dnev'?'dnevni '+(+x.min||20)+' min':(+x.days||0)+' dana')+'</span></td><td class="n">'+(+x.trainings||0)+' tr.<br><span class="mute">'+((x.wk||{})[cw]!=null?+(x.wk||{})[cw]+'%':'–')+'</span></td><td class="n mute">'+(x.upd?fmtD(String(x.upd)):'')+'</td></tr>').join('')+'</table>'}catch(e){v.textContent='Nema dozvole ili nema interneta. Provjeri da su objavljena nova pravila baze.'}})}
+   v.innerHTML='<div class="stats" style="margin:12px 0">'+stat(L.length,'korisnika ukupno')+stat(act.length,'aktivnih u 7 dana')+stat(avg+'%','prosjek ove nedelje')+'</div><table>'+L.map((x,i)=>'<tr><td>Korisnik '+(i+1)+'<br><span class="mute">'+esc((x.goals||[x.goal]).map(g=>(GOAL[g]||{}).n).filter(Boolean).join(' + '))+' · '+(x.mode=='dnev'?'dnevni '+(+x.min||20)+' min':(+x.days||0)+' dana')+'</span></td><td class="n">'+(+x.trainings||0)+' tr.<br><span class="mute">'+((x.wk||{})[cw]!=null?+(x.wk||{})[cw]+'%':'–')+'</span></td><td class="n mute">'+(x.upd?fmtD(String(x.upd)):'')+'</td></tr>').join('')+'</table>'}catch(e){v.textContent='Nema dozvole ili nema interneta. Provjeri da su objavljena nova pravila baze.'}})}
  if($('#lo')){$('#acc').textContent='Prijavljen: '+(auth.currentUser&&auth.currentUser.email||'');$('#lo').addEventListener('click',()=>{stopTick();unwake();W=null;flush();signOut(auth)})}
  document.querySelectorAll('.chips[data-k]').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const k=g.dataset.k,v=b.dataset.v;
   if(g.dataset.m){const a=draft[k],vv=k=='wd'?+v:v,i=a.indexOf(vv);i<0?a.push(vv):a.splice(i,1);b.classList.toggle('on')}
@@ -671,6 +675,7 @@ function bindPro(){
  $('#f').addEventListener('submit',e=>{e.preventDefault();
   const w=+$('#w').value,h=+$('#h').value,age=+$('#ag').value;
   if(draft.mode!='dnev'){draft.wd=[...new Set(draft.wd.map(Number))].sort((a,b)=>a-b);if(draft.wd.length<2||draft.wd.length>5){$('#err').textContent='Izaberi od 2 do 5 dana za trening.';return}draft.days=draft.wd.length}
+  draft.goals=Object.keys(GOAL).filter(g=>draft.goals.includes(g));if(!draft.goals.length){$('#err').textContent='Izaberi bar jedan cilj.';return}draft.goal=draft.goals[0];
   if(!(w>=30&&w<=250&&h>=120&&h<=220&&age>=14&&age<=90)){$('#err').textContent='Provjeri težinu, visinu i godine.';return}
   const first=!S.profile;
   S.profile=Object.assign(draft,{name:$('#nm').value.trim().slice(0,30),w,h,age});
@@ -1165,9 +1170,9 @@ function nutri(p){if(!p.sex)return null;const w=+p.w,h=+p.h,a=+p.age;
  const bmr=10*w+6.25*h-5*a+(p.sex=='m'?5:-161);
  const act=isDaily(p)?(p.min==30?1.5:1.45):({2:1.375,3:1.45,4:1.5,5:1.55})[p.days]||1.45;
  const tdee=bmr*(act+({sjed:0,noge:0.1,fiz:0.2})[p.job||'sjed']);
- const minor=a<18,f=minor?1:({mrs:0.8,def:0.9,zat:0.95,sna:1.1,kon:1})[p.goal]||1;
+ const minor=a<18,f=minor?1:Math.round(gAvg(p,{mrs:0.8,def:0.9,zat:0.95,sna:1.1,kon:1,zdr:1},1)*100)/100;
  let kc=tdee*f;if(f<1)kc=Math.max(kc,p.sex=='m'?1500:1200,bmr*1.05);kc=Math.round(kc/50)*50;
- const pr=Math.round(w*(({mrs:1.8,def:2,zat:1.6,sna:1.8,kon:1.4})[p.goal]||1.6)),fat=Math.round(w*0.9),carb=Math.max(0,Math.round((kc-pr*4-fat*9)/4));
+ const pr=Math.round(w*Math.max(...goalsOf(p).map(g=>({mrs:1.8,def:2,zat:1.6,sna:1.8,kon:1.4,zdr:1.2})[g]||1.6))),fat=Math.round(w*0.9),carb=Math.max(0,Math.round((kc-pr*4-fat*9)/4));
  return {kc,tdee:Math.round(tdee/50)*50,pr,fat,carb,water:(w*0.035).toFixed(1),f,minor}}
 function vNutri(){const p=S.profile,n=nutri(p);
  if(!n)return '<p class="ios-h">Ishrana (okvirno)</p><div class="card nap"><p class="mute">Da izračunam kalorije i proteine, u Podešavanjima izaberi pol i dnevnu aktivnost.</p><button class="btn ghost" type="button" id="topro">Otvori Podešavanja</button></div>';
