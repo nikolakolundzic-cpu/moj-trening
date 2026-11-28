@@ -436,6 +436,14 @@ const EX=[
 {n:'Podizanje noge u stranu',g:'bal',eq:'0',d:1,st:[],o:'Drži se za naslon stolice, polako podigni ispruženu nogu u stranu i spusti. Pa druga noga.',s:'Trup uspravan, ne naginji se na drugu stranu.'},
 {n:'Prebacivanje težine',g:'bal',eq:'0',d:1,t:1,st:[],o:'Stopala u širini kukova. Polako prebaci težinu na jednu nogu, zadrži 3 sekunde, pa na drugu.',s:'Pokret je mali i spor, koljena mekana.'},
 {n:'Iskorak uz stolicu',g:'bal',eq:'0',d:2,st:['koljena'],o:'Drži se za stolicu, kratko iskorači naprijed, spusti se malo i vrati nazad. Pa druga noga.',s:'Koljeno iznad stopala, ne ide preko prstiju.'},
+{n:'Pregib bučicama za biceps',g:'vuc',eq:'b',d:1,st:[],o:'Stojiš, bučice uz tijelo, dlanovi naprijed. Savij laktove i podigni bučice do ramena, pa polako spusti.',s:'Laktovi stoje uz tijelo, ne njiši se.'},
+{n:'Čekić pregib',g:'vuc',eq:'b',d:1,st:[],o:'Kao pregib za biceps, ali dlanovi gledaju jedan u drugi cijelo vrijeme.',s:'Spuštaj sporije nego što dižeš.'},
+{n:'Pregib kettlebellom',g:'vuc',eq:'k',d:1,st:[],o:'Drži kettlebell za ručku objema rukama ispred sebe i savij laktove do grudi, pa spusti.',s:'Laktovi uz tijelo.'},
+{n:'Pregib sa trakom',g:'vuc',eq:'r',d:1,st:[],o:'Stani na sredinu trake, krajeve drži u rukama i savij laktove do ramena.',s:'Polako nazad, traka ne smije da te povuče.'},
+{n:'Triceps ekstenzija bučicom',g:'gur',eq:'b',d:1,st:['ramena'],o:'Jednu bučicu drži objema rukama iznad glave. Spusti je iza glave savijajući laktove, pa ispruži ruke.',s:'Laktovi gledaju naprijed i ostaju blizu glave.'},
+{n:'Triceps sa trakom',g:'gur',eq:'r',d:1,st:[],o:'Traku zakači visoko ili je drži jednom rukom iznad glave, drugom je potiskuj nadolje dok ne ispružiš lakat.',s:'Pomjera se samo podlaktica.'},
+{n:'Propadanje sa stolice',g:'gur',eq:'0',d:2,st:['ramena'],o:'Ruke na ivicu stabilne stolice iza sebe, noge naprijed. Savij laktove i spusti se, pa se gurni gore.',s:'Leđa blizu stolice, ramena dolje od ušiju. Savij koljena da bude lakše.'},
+{n:'Dijamant sklek',g:'gur',eq:'0',d:3,st:['ramena'],o:'Sklek sa šakama blizu, palčevi i kažiprsti se dodiruju ispod grudi.',s:'Laktovi idu unazad uz tijelo. Lakše je na koljenima.'},
 {n:'Sobni bicikl',g:'kar',eq:'t',d:1,t:1,st:[],o:'Vozi brzim tempom uz srednji otpor.',s:'Sjedište u visini kuka.'}
 ];
 const WARM=['Kruženje ramenima — 30 s','Kruženje kukovima — 30 s','Marširanje u mjestu — 60 s','Lagani čučnjevi — 10 puta'];
@@ -488,14 +496,14 @@ const DAILY=[['Ponedeljak','dn'],['Utorak','dg'],['Srijeda','dk'],['Četvrtak','
 Object.assign(T,{dn:{n:'Noge i zadnjica',s:['noge','noge','core','noge','kar'],x:'noge'},dg:{n:'Gornji dio tijela',s:['gur','vuc','gur','vuc','core'],x:'core'},dk:{n:'Kardio i stomak',s:['kar','core','kar','noge','core'],x:'kar'},df:{n:'Cijelo tijelo',s:['noge','gur','vuc','core','kar'],x:'noge'},dl:{n:'Lagani dan',s:['core','vuc','noge','core','core'],x:'vuc'}});
 const isDaily=p=>p&&p.mode=='dnev';
 const WDN=['Ponedeljak','Utorak','Srijeda','Četvrtak','Petak','Subota','Nedelja'];
-const daysOf=p=>isDaily(p)?(p.style=='reps'?DAILY.map((x,i)=>[x[0],'r'+i]):DAILY):(Array.isArray(p.wd)&&p.wd.length==p.days?DAYS[p.days].map(([dn,k],i)=>[WDN[p.wd.slice().sort((a,b)=>a-b)[i]],k]):DAYS[p.days]);
-const ckey=p=>isDaily(p)?'d'+(p.min||20)+(p.style=='reps'?'r':''):String(p.days);
+const daysOf=p=>isDaily(p)?(p.style=='split'?SPLITD.map((x,i)=>[x.dn,'s'+i]):p.style=='reps'?DAILY.map((x,i)=>[x[0],'r'+i]):DAILY):(Array.isArray(p.wd)&&p.wd.length==p.days?DAYS[p.days].map(([dn,k],i)=>[WDN[p.wd.slice().sort((a,b)=>a-b)[i]],k]):DAYS[p.days]);
+const ckey=p=>isDaily(p)?'d'+(p.min||20)+(p.style=='reps'?'r':p.style=='split'?'s':''):String(p.days);
 const normP=p=>{p=JSON.parse(JSON.stringify(p));if(p.loc=='buc'){p.loc='kuca';p.eq=['b']}p.eq=p.eq||[];p.mode=p.mode||'klas';p.min=p.min||20;p.style=p.style||'mix';if(!Array.isArray(p.wd)||p.wd.length!=p.days)p.wd=(DAYS[p.days]||DAYS[3]).map(([dn])=>DIDX[dn]);p.job=p.job||'sjed';p.sex=p.sex||'';return p};
 const CH={PU:['Sklek','Sklek na koljenima','Sklek uz zid'],JS:['Skok iz čučnja','Čučanj','Čučanj do stolice'],JL:['Skok iz iskoraka','Iskorak unazad','Glute most'],
  FL:['Makaze (flutter kicks)','Mrtva buba','Bird-dog'],LR:['Podizanje nogu ležeći','Makaze (flutter kicks)','Mrtva buba'],PL:['Plank na podlakticama','Bird-dog','Mrtva buba'],
  MC:['Planinar (mountain climbers)','Marširanje u mjestu'],BU:['Burpee','Planinar (mountain climbers)','Jumping jacks','Marširanje u mjestu'],JJ:['Jumping jacks','Boks u mjestu','Marširanje u mjestu'],
  KB:['Zamah kettlebellom','Glute most'],KG:['Goblet čučanj sa kettlebellom','Čučanj','Čučanj do stolice'],PUL:['Zgibovi','Negativni zgibovi','Superman','Y-T podizanje na stomaku'],
- HK:['Podizanje koljena u visu','Podizanje nogu ležeći','Makaze (flutter kicks)'],GB:['Glute most','Podizanje na prste'],BD:['Bird-dog','Y-T podizanje na stomaku'],YT:['Y-T podizanje na stomaku','Superman']};
+ HK:['Podizanje koljena u visu','Podizanje nogu ležeći','Makaze (flutter kicks)'],GB:['Glute most','Podizanje na prste'],BD:['Bird-dog','Y-T podizanje na stomaku'],CU:['Pregib bučicama za biceps','Pregib kettlebellom','Pregib sa trakom','Čekić pregib','Superman'],HC:['Čekić pregib','Pregib sa trakom','Pregib kettlebellom','Y-T podizanje na stomaku'],TR:['Triceps ekstenzija bučicom','Triceps sa trakom','Propadanje sa stolice','Sklek uz zid'],RW:['Veslanje sa obje bučice u pretklonu','Veslanje bučicom jednom rukom','Veslanje kettlebellom','Veslanje sa trakom','Superman'],SH:['Potisak bučica iznad glave','Potisak kettlebella iznad glave','Potisak trake iznad glave','Sklek uz zid'],DP:['Dijamant sklek','Propadanje sa stolice','Sklek na koljenima'],JR:['Vijača – brzi tempo','Vijača – osnovni skok','Jumping jacks','Marširanje u mjestu'],YT:['Y-T podizanje na stomaku','Superman']};
 const REPSD=[
  {n:'Sklekovi i skokovi',c:['PU','JS','FL','JL','PL'],x:'MC'},
  {n:'Snaga i stomak',c:['KB','PUL','PU','LR','MC'],x:'PL'},
@@ -505,9 +513,17 @@ const REPSD=[
  {n:'Kondicija',c:['BU','PU','JS','LR','MC'],x:'PL'},
  {n:'Lagani dan',c:['PL','LR','GB','BD','FL'],x:'YT'}];
 REPSD.forEach((d,i)=>{T['r'+i]={n:d.n,s:[],x:''}});
-const isReps=p=>isDaily(p)&&p.style=='reps';
+const SPLITD=[
+ {dn:'Ponedeljak',n:'Ruke, grudi i leđa',c:['PU','PUL','CU','TR','RW'],x:'SH'},
+ {dn:'Utorak',n:'Noge i stomak',c:['JS','KB','JL','LR','PL'],x:'MC'},
+ {dn:'Četvrtak',n:'Ruke, grudi i leđa',c:['PUL','SH','DP','HC','RW'],x:'TR'},
+ {dn:'Petak',n:'Noge i stomak',c:['KG','JL','HK','FL','GB'],x:'JR'},
+ {dn:'Subota',n:'Ruke, grudi i leđa',c:['PU','RW','PUL','TR','CU'],x:'SH'}];
+SPLITD.forEach((d,i)=>{T['s'+i]={n:d.n,s:[],x:''}});
+const isReps=p=>isDaily(p)&&(p.style=='reps'||p.style=='split');
+const RDAY=(p,di)=>(p.style=='split'?SPLITD:REPSD)[di];
 function pickChain(p,ch,used){const ok=allowedEx(Object.assign({},p,{lvl:String(Math.min(3,+p.lvl+1))}));for(const n of CH[ch]){const e=EX.find(x=>x.n==n);if(e&&ok(e)&&!used.has(n)){used.add(n);return e}}
- const g=EX.find(x=>x.n==CH[ch][0]).g,pl=poolFor(p,g),e=pl.find(x=>!used.has(x.n))||pl[0];used.add(e.n);return e}
+ const g=EX.find(x=>x.n==CH[ch][0]).g,pl=poolFor(p,g),e=pl.find(x=>!used.has(x.n))||[g,'gur','vuc','core','noge','kar'].map(x=>poolFor(p,x).find(z=>!used.has(z.n))).find(Boolean)||pl[0];used.add(e.n);return e}
 
 
 
@@ -528,7 +544,7 @@ function build(p,raw,nb){
  return daysOf(p).map(([dn,k],di)=>{
   const used=new Set(),slots=T[k].s.slice();
   if(D){if(p.min==30)slots.push(T[k].x)}else if((p.goal=='mrs'||p.goal=='kon'||p.goal=='def')&&k!='kar')slots.push('kar');
-  const rec=isReps(p)?REPSD[di].c.concat(p.min==30?[REPSD[di].x]:[]).map(ch=>pickChain(p,ch,used)):slots.map(g=>{const c=poolFor(p,g);let i=cnt[g]||0,e,tries=0;
+  const rec=isReps(p)?RDAY(p,di).c.concat(p.min==30?[RDAY(p,di).x]:[]).map(ch=>pickChain(p,ch,used)):slots.map(g=>{const c=poolFor(p,g);let i=cnt[g]||0,e,tries=0;
    do{e=c[i%c.length];i++;tries++}while(used.has(e.n)&&tries<c.length);
    cnt[g]=i;if(used.has(e.n)){const ok=allowedEx(p),alt=[g,'core','noge','vuc','gur','kar'].map(x=>EX.filter(z=>z.g==x&&ok(z)&&!used.has(z.n))).find(a=>a.length);if(alt)e=alt[0]}used.add(e.n);return e});
   if(isReps(p))rec.forEach(e=>slots.push(e.g));
@@ -551,7 +567,7 @@ $('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)
 function header(){
  const p=S.profile;
  $('#ttl').textContent=p&&p.name?p.name:'Moj trening';
- $('#sub').textContent=p?GOAL[p.goal].n+' · '+LVL[p.lvl]+' · '+(isDaily(p)?'svaki dan '+(p.min||20)+' min':p.days+' dana nedeljno'):'Program vježbi napravljen po tvojim mjerama';
+ $('#sub').textContent=p?GOAL[p.goal].n+' · '+LVL[p.lvl]+' · '+(isDaily(p)?(p.style=='split'?'5 dana nedeljno · ':'svaki dan ')+(p.min||20)+' min':p.days+' dana nedeljno'):'Program vježbi napravljen po tvojim mjerama';
  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));
 }
 
@@ -613,7 +629,7 @@ function vPro(){
  sr('Nivo',chips('lvl',Object.entries(LVL)))+
  sr('Način',chips('mode',[['klas','Klasični'],['dnev','Dnevni']]))+
  '<div id="f_days"'+(p.mode=='dnev'?' hidden':'')+'>'+sr('Dani',chips('wd',[[0,'P'],[1,'U'],[2,'S'],[3,'Č'],[4,'P'],[5,'S'],[6,'N']],1))+'<p class="mute" style="margin:4px 0 0">Izaberi 2 do 5 dana: P U S Č P S N.</p>'+'</div>'+
- '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'>'+sr('Trajanje',chips('min',[[20,'20 min'],[30,'30 min']]))+sr('Stil',chips('style',[['mix','Mješovito'],['reps','Skokovi']]))+'<p class="mute" style="margin:5px 0 0">Stil „Skokovi“ je po uzoru na dailyrepsguy, nije njegov zvanični program.</p></div>'+
+ '<div id="f_min"'+(p.mode=='dnev'?'':' hidden')+'>'+sr('Trajanje',chips('min',[[20,'20 min'],[30,'30 min']]))+sr('Stil',chips('style',[['mix','Mješovito'],['reps','Skokovi'],['split','Split 5 dana']]))+'<p class="mute" style="margin:5px 0 0">Stilovi „Skokovi“ i „Split 5 dana“ su po uzoru na dailyrepsguy, nisu njegov zvanični program. Split: ponedeljak, četvrtak i subota ruke, grudi i leđa; utorak i petak noge i stomak; srijeda i nedelja odmor.</p></div>'+
  sr('Gdje',chips('loc',[['kuca','Kod kuće'],['ter','Teretana']]))+
  '<div id="f_eq"'+(p.loc=='ter'?' hidden':'')+'><label>Oprema kod kuće</label>'+chips('eq',[['b','Bučice'],['k','Kettlebell'],['r','Traka'],['p','Vratilo'],['v','Vibro platforma'],['j','Vijača']],1)+'<p class="mute" style="margin:5px 0 0">Platforma: ne u trudnoći, sa pejsmejkerom, epilepsijom, trombozom, implantatom u zglobu ili poslije operacije, bez dozvole ljekara.</p></div>'+
  '<label>Problemi sa zglobovima</label>'+chips('prob',[['koljena','Koljena'],['leđa','Leđa'],['ramena','Ramena']],1)+
@@ -763,9 +779,12 @@ const MOT={
   bal1:{f:[pz({}),pz(LEGUP)],pr:'chair',d:1800},
   heel:{f:MOT.march.f,d:1300},
   abd:{f:[pz(FS),pz(FS,{k2:[110,103],a2:[122,127],t2:[127,128]})],d:1100},
+  curl:{f:[pz({e:[102,60],w:[104,78]}),pz({e:[103,60],w:[113,46]})],db:2,d:1400},
+  tri:{f:[pz({e:[114,20],w:[100,40]}),pz({e:[114,20],w:[118,0]})],db:1,d:1500},
+  dip:{f:[pz({s:[92,76],h:[95,64],e:[90,92],w:[86,106],p:[96,104],k:[124,100],a:[130,130],t:[138,130]}),pz({s:[93,90],h:[97,78],e:[76,96],w:[86,106],p:[96,118],k:[124,106],a:[130,130],t:[138,130]})],pr:'chair',d:1300},
   shift:{f:[pz(FS,{h:[95,30],s:[95,42],p:[96,78]}),pz(FS,{h:[105,30],s:[105,42],p:[104,78]})],d:1500}
  })}
-const MAPM={'Čučanj do stolice':['sqc','chair squat'],'Glute most':['br','glute bridge'],'Podizanje na prste':['calf','standing calf raise'],'Čučanj':['sq','bodyweight squat'],'Iskorak unazad':['lg','reverse lunge'],'Most na jednoj nozi':['br1','single leg glute bridge'],'Čučanj sa bučicom (goblet)':['gb','goblet squat'],'Rumunsko mrtvo dizanje':['rdl','dumbbell romanian deadlift'],'Iskorak sa bučicama':['lg','dumbbell reverse lunge'],'Leg press':['sq','leg press machine'],'Hip thrust na klupi':['br','hip thrust'],'Sklek uz zid':['wall','wall push up'],'Sklek na koljenima':['kp','knee push up'],'Sklek':['pu','push up'],'Potisak bučica na podu':['fp','dumbbell floor press'],'Potisak bučica iznad glave':['ohp','dumbbell shoulder press'],'Potisak na mašini za grudi':['mcp','chest press machine'],'Y-T podizanje na stomaku':['yt','prone Y T raise'],'Superman':['sup','superman exercise'],'Veslanje bučicom jednom rukom':['row1','one arm dumbbell row'],'Veslanje sa obje bučice u pretklonu':['row2','bent over dumbbell row'],'Lat povlačenje':['lat','lat pulldown'],'Veslanje na sajli sjedeći':['crow','seated cable row'],'Mrtva buba':['dbug','dead bug exercise'],'Bird-dog':['bird','bird dog exercise'],'Plank na podlakticama':['plank','forearm plank'],'Bočni plank':['splank','side plank'],'Marširanje u mjestu':['march','high knee marching in place'],'Boks u mjestu':['box','shadow boxing workout'],'Planinar (mountain climbers)':['climb','mountain climbers'],'Jumping jacks':['jj','jumping jacks'],'Burpee':['burp','burpee'],'Sobni bicikl':['bike','stationary bike'],'Vijača – osnovni skok':['rope','jump rope basic bounce'],'Vijača – naizmjenične noge':['rope2','jump rope alternate foot step'],'Vijača – boks korak':['rope3','jump rope boxer step'],'Vijača – brzi tempo':['rope','jump rope speed step'],'Vijača – dupli skok':['rope','jump rope double under'],'Stajanje na jednoj nozi':['bal1','single leg stand balance exercise seniors'],'Hod peta-prst':['heel','heel to toe walk balance exercise'],'Podizanje noge u stranu':['abd','standing side leg raise chair'],'Prebacivanje težine':['shift','weight shift balance exercise seniors'],'Iskorak uz stolicu':['lg','supported lunge with chair']};
+const MAPM={'Čučanj do stolice':['sqc','chair squat'],'Glute most':['br','glute bridge'],'Podizanje na prste':['calf','standing calf raise'],'Čučanj':['sq','bodyweight squat'],'Iskorak unazad':['lg','reverse lunge'],'Most na jednoj nozi':['br1','single leg glute bridge'],'Čučanj sa bučicom (goblet)':['gb','goblet squat'],'Rumunsko mrtvo dizanje':['rdl','dumbbell romanian deadlift'],'Iskorak sa bučicama':['lg','dumbbell reverse lunge'],'Leg press':['sq','leg press machine'],'Hip thrust na klupi':['br','hip thrust'],'Sklek uz zid':['wall','wall push up'],'Sklek na koljenima':['kp','knee push up'],'Sklek':['pu','push up'],'Potisak bučica na podu':['fp','dumbbell floor press'],'Potisak bučica iznad glave':['ohp','dumbbell shoulder press'],'Potisak na mašini za grudi':['mcp','chest press machine'],'Y-T podizanje na stomaku':['yt','prone Y T raise'],'Superman':['sup','superman exercise'],'Veslanje bučicom jednom rukom':['row1','one arm dumbbell row'],'Veslanje sa obje bučice u pretklonu':['row2','bent over dumbbell row'],'Lat povlačenje':['lat','lat pulldown'],'Veslanje na sajli sjedeći':['crow','seated cable row'],'Mrtva buba':['dbug','dead bug exercise'],'Bird-dog':['bird','bird dog exercise'],'Plank na podlakticama':['plank','forearm plank'],'Bočni plank':['splank','side plank'],'Marširanje u mjestu':['march','high knee marching in place'],'Boks u mjestu':['box','shadow boxing workout'],'Planinar (mountain climbers)':['climb','mountain climbers'],'Jumping jacks':['jj','jumping jacks'],'Burpee':['burp','burpee'],'Sobni bicikl':['bike','stationary bike'],'Pregib bučicama za biceps':['curl','dumbbell bicep curl'],'Čekić pregib':['curl','dumbbell hammer curl'],'Pregib kettlebellom':['curl','kettlebell bicep curl'],'Pregib sa trakom':['curl','resistance band bicep curl'],'Triceps ekstenzija bučicom':['tri','overhead dumbbell triceps extension'],'Triceps sa trakom':['tri','resistance band triceps extension'],'Propadanje sa stolice':['dip','chair dips'],'Dijamant sklek':['pu','diamond push up'],'Vijača – osnovni skok':['rope','jump rope basic bounce'],'Vijača – naizmjenične noge':['rope2','jump rope alternate foot step'],'Vijača – boks korak':['rope3','jump rope boxer step'],'Vijača – brzi tempo':['rope','jump rope speed step'],'Vijača – dupli skok':['rope','jump rope double under'],'Stajanje na jednoj nozi':['bal1','single leg stand balance exercise seniors'],'Hod peta-prst':['heel','heel to toe walk balance exercise'],'Podizanje noge u stranu':['abd','standing side leg raise chair'],'Prebacivanje težine':['shift','weight shift balance exercise seniors'],'Iskorak uz stolicu':['lg','supported lunge with chair']};
 const MAPMd={'Iskorak sa bučicama':2,'Leg press':0};
 const SEG=[['p','k2'],['k2','a2'],['a2','t2'],['s','e2'],['e2','w2'],['s','p'],['p','k'],['k','a'],['a','t'],['s','e'],['e','w']];
 const anim=(name,cls)=>{const m=MAPM[name];return m?'<svg class="anim '+cls+'" viewBox="0 0 200 140" data-m="'+m[0]+'" data-n="'+esc(name)+'" role="img" aria-label="Animacija vježbe"></svg>':''};
@@ -812,7 +831,7 @@ Object.assign(MOT,{
  kr:{f:[pz(HG),pz(HG,{k:[124,76],a:[124,100],t:[130,100],p:[102,78]})],pr:'pbar'}
 });
 Object.assign(MAPM,{'Razvlačenje trake':['pa','band pull apart'],'Veslanje sa trakom':['crow','seated resistance band row'],'Čučanj sa trakom':['sq','resistance band squat'],'Bočni hod sa trakom':['side','lateral band walk'],'Potisak trake iznad glave':['ohp','resistance band overhead press'],'Visenje na vratilu':['hang','dead hang'],'Podizanje koljena u visu':['kr','hanging knee raise'],'Negativni zgibovi':['pull','negative pull ups'],'Zgibovi':['pull','pull ups proper form']});
-MAPMd['Potisak trake iznad glave']=0;
+MAPMd['Potisak trake iznad glave']=0;MAPMd['Pregib kettlebellom']=1;MAPMd['Pregib sa trakom']=0;MAPMd['Triceps sa trakom']=0;
 
 
 Object.assign(MOT,{
